@@ -48,7 +48,7 @@ if ($id) {
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 $videofile = new videofile($context, $cm, $course);
-print_r($videofile);
+
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
@@ -73,6 +73,8 @@ if ($ableplayer->intro) { // Conditions to show the intro can change to look for
 }
 
 //echo ableplayer_video($ableplayer, $cm, $context);
+$renderer = $PAGE->get_renderer('mod_ableplayer');
+echo $renderer->video_page($videofile);
 
 // Finish the page
 echo $OUTPUT->footer();

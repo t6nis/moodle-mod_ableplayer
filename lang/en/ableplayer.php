@@ -38,6 +38,8 @@ $string['ableplayer'] = 'AblePlayer';
 $string['pluginadministration'] = 'AblePlayer administration';
 $string['pluginname'] = 'AblePlayer';
 //General
+$string['medias'] = 'Media files';
+$string['medias_help'] = 'Supported files .mp4, .flv, .webm only';
 $string['ableplayersource'] = 'Source';
 $string['ableplayersource_help'] = 'Help File .mp4, .flv, .webm only';
 $string['urltype'] = 'Type';

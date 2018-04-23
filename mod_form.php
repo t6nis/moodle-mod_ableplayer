@@ -62,8 +62,22 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $mform->addElement('header', 'ableplayersource', get_string('ableplayersource', 'ableplayer'));
 
         // ableplayerfile
-        $mform->addElement('filemanager', 'file', get_string('ableplayerfile', 'ableplayer'), null, array('subdirs' => 0, 'accepted_types' => ableplayer_video_extensions()));
-        $mform->addHelpButton('file', 'ableplayerfile', 'ableplayer');
+        //$mform->addElement('filemanager', 'file', get_string('ableplayerfile', 'ableplayer'), null, array('subdirs' => 0, 'accepted_types' => ableplayer_video_extensions()));
+        //$mform->addHelpButton('file', 'ableplayerfile', 'ableplayer');
+
+        // Medias file manager.
+        $options = array('subdirs' => false,
+            'maxbytes' => 0,
+            'maxfiles' => -1,
+            'accepted_types' => array('.mp4', '.webm', '.ogv', '.mp3'));
+        $mform->addElement(
+            'filemanager',
+            'medias',
+            get_string('medias', 'ableplayer'),
+            null,
+            $options);
+        $mform->addHelpButton('medias', 'medias', 'ableplayer');
+        $mform->addRule('medias', null, 'required', null, 'client');
 
         //-------------------------------------------------------------------------------
         // add standard elements, common to all modules
@@ -74,14 +88,20 @@ class mod_ableplayer_mod_form extends moodleform_mod {
     }
 
     function data_preprocessing(&$default_values) {
-
         global $CFG;
 
         if ($this->current->instance) {
-            //media file
-            $draftitemid = file_get_submitted_draft_itemid('file');
-            file_prepare_draft_area($draftitemid, $this->context->id, 'mod_ableplayer', 'file', 0, array('subdirs'=>0));
-            $default_values['file'] = $draftitemid;
+            $options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => -1);
+            $draftitemid = file_get_submitted_draft_itemid('medias');
+            file_prepare_draft_area($draftitemid,
+                $this->context->id,
+                'mod_ableplayer',
+                'medias',
+                0,
+                $options);
+            $default_values['medias'] = $draftitemid;
         }
     }
 
