@@ -19,7 +19,7 @@
  *
  * It uses the standard core Moodle formslib. For more info about them, please
  * visit: http://docs.moodle.org/en/Development:lib/formslib.php
- * 
+ *
  * @package    mod
  * @subpackage ableplayer
  * @author     Tõnis Tartes <tonis.tartes@gmail.com>
@@ -58,7 +58,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields
         $this->standard_intro_elements();
 
-    //--------------------------------------- MEDIA SOURCE ----------------------------------------
+        //--------------------------------------- MEDIA SOURCE ----------------------------------------
         $mform->addElement('header', 'ableplayersource', get_string('ableplayersource', 'ableplayer'));
 
         // ableplayerfile
@@ -72,9 +72,9 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         // add standard buttons, common to all modules
         $this->add_action_buttons();
     }
-        
+
     function data_preprocessing(&$default_values) {
-        
+
         global $CFG;
 
         if ($this->current->instance) {
@@ -84,5 +84,5 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             $default_values['file'] = $draftitemid;
         }
     }
-    
+
 }

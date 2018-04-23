@@ -29,6 +29,7 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
 
 $id = optional_param('id', 0, PARAM_INT); // course_module ID, or
@@ -42,15 +43,12 @@ if ($id) {
     $ableplayer  = $DB->get_record('ableplayer', array('id' => $n), '*', MUST_EXIST);
     $course     = $DB->get_record('course', array('id' => $ableplayer->course), '*', MUST_EXIST);
     $cm         = get_coursemodule_from_instance('ableplayer', $ableplayer->id, $course->id, false, MUST_EXIST);
-} else {
-    error('You must specify a course_module ID or an instance ID');
 }
 
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
-
-//add_to_log($course->id, 'ableplayer', 'view', "view.php?id={$cm->id}", $ableplayer->name, $cm->id);
-
+$videofile = new videofile($context, $cm, $course);
+print_r($videofile);
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
@@ -74,7 +72,7 @@ if ($ableplayer->intro) { // Conditions to show the intro can change to look for
     echo $OUTPUT->box(format_module_intro('ableplayer', $ableplayer, $cm->id), 'generalbox mod_introbox', 'ableplayerintro');
 }
 
-echo ableplayer_video($ableplayer, $cm, $context);
+//echo ableplayer_video($ableplayer, $cm, $context);
 
 // Finish the page
 echo $OUTPUT->footer();

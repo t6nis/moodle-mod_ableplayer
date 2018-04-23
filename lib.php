@@ -43,7 +43,6 @@ function ableplayer_supports($feature) {
         case FEATURE_MOD_INTRO:               return true;
         case FEATURE_GROUPS:                  return false;
         case FEATURE_GROUPINGS:               return false;
-        case FEATURE_GROUPMEMBERSONLY:        return true;
         case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
         case FEATURE_GRADE_HAS_GRADE:         return false;
         case FEATURE_GRADE_OUTCOMES:          return false;
@@ -65,45 +64,13 @@ function ableplayer_supports($feature) {
  * @param mod_ableplayer_mod_form $mform
  * @return int The id of the newly inserted ableplayer record
  */
-function ableplayer_add_instance(stdClass $ableplayer, mod_ableplayer_mod_form $mform = null) {
+function ableplayer_add_instance(stdClass $data, mod_ableplayer_mod_form $mform = null) {
+    require_once(dirname(__FILE__) . '/locallib.php');
     global $DB, $CFG;
 
-    $ableplayer->timecreated = time();
-    
-    //Stuff
-    $context = context_module::instance($ableplayer->coursemodule);
-
-    $fs = get_file_storage();
-    $items = array('file');
-    //$ableplayer->ableplayerfile = $ableplayer->linkurl;
-
-    foreach ($items as $value) {
-        
-        $file = '';
-        
-        //media file
-        $draftitemid = file_get_submitted_draft_itemid($value);
-        file_prepare_draft_area($draftitemid, $context->id, 'mod_ableplayer', $value, 0, array('subdirs'=>0));
-        file_save_draft_area_files($draftitemid, $context->id, 'mod_ableplayer', $value, 0, array('subdirs'=>0));
-        $file = $fs->get_area_files($context->id, 'mod_ableplayer', $value, 0, 'sortorder DESC, id ASC', false); // TODO: this is not very efficient!!
-        //getting the filename with extension
-        $file_details = $fs->get_file_by_hash(key($file));
-
-        if ($value == 'file') {
-            $ableplayer->ableplayerfile = $file_details->get_filename();
-        } else {
-            if (!empty($file)) {
-                $ableplayer->$value = $file_details->get_filename();
-            } else {
-                $ableplayer->$value = NULL;
-            }            
-        }
-    
-    }
-    //notes
-    //$ableplayer = file_postupdate_standard_editor($ableplayer, 'notes', array('subdirs'=>0, 'maxfiles'=>3, 'maxbytes'=>$CFG->maxbytes, 'trusttext'=>true, 'context'=>$context), $context, 'mod_ableplayer', 'notes', 0);
-    
-    return $DB->insert_record('ableplayer', $ableplayer);
+    $context = context_module::instance($data->coursemodule);
+    $videofile = new videofile($context, null, null);
+    return $videofile->add_instance($data);
 }
 
 /**
@@ -117,46 +84,14 @@ function ableplayer_add_instance(stdClass $ableplayer, mod_ableplayer_mod_form $
  * @param mod_ableplayer_mod_form $mform
  * @return boolean Success/Fail
  */
-function ableplayer_update_instance(stdClass $ableplayer, mod_ableplayer_mod_form $mform = null) {
+function ableplayer_update_instance(stdClass $data, mod_ableplayer_mod_form $mform = null) {
+    require_once(dirname(__FILE__) . '/locallib.php');
     global $DB, $CFG;
 
-    $ableplayer->timemodified = time();
-    $ableplayer->id = $ableplayer->instance;
-
-    # You may have to add extra stuff in here #
-    $context = context_module::instance($ableplayer->coursemodule);
-
-    $fs = get_file_storage();
-
-    $items = array('file');
-    
-    foreach ($items as $value) {
-        
-        $file = '';
-        
-        //media file
-        $draftitemid = file_get_submitted_draft_itemid($value);
-        file_prepare_draft_area($draftitemid, $context->id, 'mod_ableplayer', $value, 0, array('subdirs'=>0));
-        file_save_draft_area_files($draftitemid, $context->id, 'mod_ableplayer', $value, 0, array('subdirs'=>0));
-        $file = $fs->get_area_files($context->id, 'mod_ableplayer', $value, 0, 'sortorder DESC, id ASC', false); // TODO: this is not very efficient!!
-        //getting the filename with extension
-        $file_details = $fs->get_file_by_hash(key($file));
-        
-        if ($value == 'file') {
-            $ableplayer->ableplayerfile = $file_details->get_filename();
-        } else {
-            if (!empty($file)) {
-                $ableplayer->$value = $file_details->get_filename();
-            } else {
-                $ableplayer->$value = NULL;
-            }            
-        }
-    }
-
-    //notes
-    //$ableplayer = file_postupdate_standard_editor($ableplayer, 'notes', array('subdirs'=>0, 'maxfiles'=>3, 'maxbytes'=>$CFG->maxbytes, 'trusttext'=>true, 'context'=>$context), $context, 'mod_ableplayer', 'notes', 0);
-
-    return $DB->update_record('ableplayer', $ableplayer);
+    require_once(dirname(__FILE__) . '/locallib.php');
+    $context = context_module::instance($data->coursemodule);
+    $videofile = new videofile($context, null, null);
+    return $videofile->update_instance($data);
 }
 
 /**
@@ -170,15 +105,11 @@ function ableplayer_update_instance(stdClass $ableplayer, mod_ableplayer_mod_for
  * @return boolean Success/Failure
  */
 function ableplayer_delete_instance($id) {
-    global $DB;
-
-    if (! $ableplayer = $DB->get_record('ableplayer', array('id' => $id))) {
-        return false;
-    }
-
-    $DB->delete_records('ableplayer', array('id' => $ableplayer->id));
-
-    return true;
+    require_once(dirname(__FILE__) . '/locallib.php');
+    $cm = get_coursemodule_from_instance('videofile', $id, 0, false, MUST_EXIST);
+    $context = context_module::instance($cm->id);
+    $videofile = new videofile($context, null, null);
+    return $videofile->delete_instance();
 }
 
 /**
@@ -191,11 +122,23 @@ function ableplayer_delete_instance($id) {
  * @return stdClass|null
  */
 function ableplayer_user_outline($course, $user, $mod, $ableplayer) {
-    
-    $return = new stdClass();
-    $return->time = 0;
-    $return->info = '';
-    return $return;
+    global $DB;
+    $logs = $DB->get_records(
+        'log',
+        array('userid' => $user->id,
+            'module' => 'videofile',
+            'action' => 'view',
+            'info' => $ableplayer->id),
+        'time ASC');
+    if ($logs) {
+        $numviews = count($logs);
+        $lastlog = array_pop($logs);
+        $result = new stdClass();
+        $result->time = $lastlog->time;
+        $result->info = get_string('numviews', '', $numviews);
+        return $result;
+    }
+    return null;
 }
 
 /**
@@ -209,6 +152,23 @@ function ableplayer_user_outline($course, $user, $mod, $ableplayer) {
  * @return void, is supposed to echp directly
  */
 function ableplayer_user_complete($course, $user, $mod, $ableplayer) {
+    global $DB;
+    $logs = $DB->get_records(
+        'log',
+        array('userid' => $user->id,
+            'module' => 'videofile',
+            'action' => 'view',
+            'info' => $ableplayer->id),
+        'time ASC');
+    if ($logs) {
+        $numviews = count($logs);
+        $lastlog = array_pop($logs);
+        $strmostrecently = get_string('mostrecently');
+        $strnumviews = get_string('numviews', '', $numviews);
+        echo "$strnumviews - $strmostrecently ".userdate($lastlog->time);
+    } else {
+        print_string('neverseen', 'videofile');
+    }
 }
 
 /**
@@ -343,12 +303,9 @@ function ableplayer_update_grades(stdClass $ableplayer, $userid = 0) {
  * @return array of [(string)filearea] => (string)description
  */
 function ableplayer_get_file_areas($course, $cm, $context) {
-    $areas = array('file', 'notes', 'image', 'captionsfile');
-    $areas['file'] = get_string('ableplayerfile', 'ableplayer');
-    $areas['notes'] = get_string('notes', 'ableplayer');
-    $areas['image'] = get_string('image', 'ableplayer');
-    $areas['captionsfile'] = get_string('captionsfile', 'ableplayer');
-    return $areas;
+    return array(
+        'medias' => get_string('filearea_medias', 'ableplayer'),
+    );
 }
 
 /**
@@ -370,34 +327,42 @@ function ableplayer_get_file_areas($course, $cm, $context) {
  */
 function ableplayer_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
     global $CFG;
-
-    if (!has_capability('moodle/course:managefiles', $context)) {
-        // students can not peak here!
+    if ($context->contextlevel != CONTEXT_MODULE) {
         return null;
     }
-
+    // Filearea must contain a real area.
+    if (!isset($areas[$filearea])) {
+        return null;
+    }
+    if (!has_capability('moodle/course:managefiles', $context)) {
+        // Students can not peek here!
+        return null;
+    }
     $fs = get_file_storage();
-
-    if ($filearea == 'file' || $filearea == 'notes' || $filearea == 'image' || $filearea == 'captionsfile') {
-    
+    if ($filearea === 'medias') {
         $filepath = is_null($filepath) ? '/' : $filepath;
         $filename = is_null($filename) ? '.' : $filename;
-
-        $urlbase = $CFG->wwwroot.'/pluginfile.php';
-        if (!$storedfile = $fs->get_file($context->id, 'mod_ableplayer', $filearea, 0, $filepath, $filename)) {
-            if ($filepath === '/' and $filename === '.') {
-                $storedfile = new virtual_root_file($context->id, 'mod_ableplayer', $filearea, 0);
-            } else {
-                // not found
-                return null;
-            }
+        if (!$storedfile = $fs->get_file($context->id,
+            'mod_ableplayer',
+            $filearea,
+            0,
+            $filepath,
+            $filename)) {
+            // Not found.
+            return null;
         }
-
-        return new ableplayer_content_file_info($browser, $context, $storedfile, $urlbase, $areas[$filearea], true, true, true, false);
-        
+        $urlbase = $CFG->wwwroot . '/pluginfile.php';
+        return new file_info_stored($browser,
+            $context,
+            $storedfile,
+            $urlbase,
+            $areas[$filearea],
+            false,
+            true,
+            true,
+            false);
     }
-    // note: resource_intro handled in file_browser automatically
-
+    // Not found.
     return null;
 }
 
@@ -416,32 +381,27 @@ function ableplayer_get_file_info($browser, $areas, $course, $cm, $context, $fil
  * @param array $options additional options affecting the file serving
  */
 function ableplayer_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options=array()) {
-    global $DB, $CFG;
-
+    global $CFG, $DB, $USER;
+    require_once(dirname(__FILE__) . '/locallib.php');
     if ($context->contextlevel != CONTEXT_MODULE) {
-        send_file_not_found();
-    }
-
-    require_course_login($course, true, $cm);
-
-    if (($filearea == 'notes') || ($filearea == 'file') || ($filearea == 'image') || ($filearea == 'captionsfile')) {
-        #OK Continue..
-    } else {        
         return false;
     }
+    require_login($course, true, $cm);
 
-    $fileid = (int)array_shift($args);
-
+    if ($filearea !== 'medias') {
+        // Intro is handled automatically in pluginfile.php.
+        return false;
+    }
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_ableplayer/$filearea/$fileid/$relativepath";
-    
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+    $fullpath = rtrim('/' . $context->id . '/mod_ableplayer/' . $filearea . '/' .
+        $relativepath, '/');
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file || $file->is_directory()) {
         return false;
     }
-    
-    send_stored_file($file, 360, 0, false);
-    
+    // Default cache lifetime is 86400s.
+    send_stored_file($file);
 }
 
 /**
@@ -461,6 +421,16 @@ class ableplayer_content_file_info extends file_info_stored {
         return parent::get_visible_name();
     }
 }
+/**
+ * This function is used by the reset_course_userdata function in moodlelib.
+ *
+ * @param $data The data submitted from the reset course.
+ * @return array Status array
+ */
+function ableplayer_reset_userdata($data) {
+    return array();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Navigation API                                                             //
 ////////////////////////////////////////////////////////////////////////////////
