@@ -70,15 +70,20 @@ $string['ableplayerappearance_help'] = 'Apperance help';
 $string['title'] = 'Title';
 $string['width'] = 'Width';
 $string['height'] = 'Height';
-$string['image'] = 'Poster Image';
-$string['image_help'] = 'Poster Image (.jpg, .jpeg, .png only)';
+$string['posters'] = 'Poster Images';
+$string['posters_help'] = 'Poster Image (.jpg, .jpeg, .png only)';
 $string['notes'] = 'Notes';
 //captions 
 $string['captions'] = 'Captions';
 $string['ableplayercaptions'] = 'Captions';
 $string['ableplayercaptions_help'] = 'Captions help';
+$string['ableplayercaption'] = 'Captions';
+$string['ableplayercaption_help'] = 'Captions help';
 $string['captionsback'] = 'Transparent Background';
 $string['captionsfile'] = 'Captions File';
-$string['captionsfile_help'] = 'Captions File (.vtt, .srt, .xml only)';
+$string['captions_help'] = 'Captions File (.vtt)';
 $string['captionsfontsize'] = 'Font Size';
 $string['captionsstate'] = 'Show Captions';
+
+$string['title'] = 'Title';
+$string['lyricsmode'] = 'Lyrics mode';

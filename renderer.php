@@ -149,6 +149,21 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             'itemid, filepath, filename',
             false);
     }
+    /**
+     * Utility function for getting the video poster image
+     *
+     * @param int $contextid
+     * @return url to the poster image (or the default image)
+     */
+    private function get_captions($contextid) {
+        $captions = array();
+        $captions_files = $this->util_get_area_files($contextid, 'captions');
+        foreach ($captions_files as $file) {
+            $captions[] = $file;
+        }
+
+        return $captions;
+    }
 
     /**
      * Utility function for getting the video poster image
@@ -164,7 +179,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             break;  // Only one poster allowed.
         }
         if (!$posterurl) {
-            $posterurl = $this->pix_url('moodle-logo', 'videofile');
+            $posterurl = $this->pix_url('moodle-logo', 'ableplayer');
         }
 
         return $posterurl;
@@ -179,16 +194,24 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
     private function get_video_source_elements_html($contextid) {
         $output = '';
         $videos = $this->util_get_area_files($contextid, 'medias');
-        $videoscnt = count($videos);
+        $posterurl = $this->get_poster_image($contextid);
+        $captions = $this->get_captions($contextid);
 
+        $videoscnt = count($videos);
         if ($videoscnt > 1) {
             $sorted_arr = array();
+            $i = 0;
             foreach ($videos as $file) {
                 if ($mimetype = $file->get_mimetype()) {
                     $mimetag = explode('/', $mimetype);
-                    $sorted_arr[$mimetag[0]][] = $file;
+                    if (!empty($captions[$i])) {
+                        $sorted_arr[$mimetag[0]][$i]['caption'] = $captions[$i];
+                    }
+                    $sorted_arr[$mimetag[0]][$i]['file'] = $file;
+                    $i++;
                 }
             }
+
             if (!empty($sorted_arr['video'])) {
                 $output .= html_writer::start_tag(
                     'video',
@@ -197,9 +220,14 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                         'preload' => 'auto',
                         'width' => 'auto',
                         'height' => 'auto',
-                        //'poster' => $posterurl,
+                        'poster' => $posterurl,
                     )
                 );
+                foreach ($sorted_arr['audio'] as $key => $value) {
+                    if (!empty($value['caption'])) {
+                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption']);
+                    }
+                }
                 $output .= html_writer::end_tag('video');
                 // Videos
                 $output .= html_writer::empty_tag('ul', array(
@@ -207,15 +235,15 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                     'data-player' => 'ableplayer_video',
                     'data-embedded' => ''
                 ));
-                foreach ($sorted_arr['video'] as $file) {
-                    $videourl = $this->util_get_file_url($file);
-                    $mimtype = explode('/', $file->get_mimetype());
+                foreach ($sorted_arr['video'] as $key => $value) {
+                    $videourl = $this->util_get_file_url($value['file']);
+                    $mimtype = explode('/', $value['file']->get_mimetype());
                     $output .= html_writer::empty_tag(
                         'li',
                         array('data-' . $mimtype[1] => $videourl,
                             'class' => 'data-' . $mimtype[0])
                     );
-                    $output .= $file->get_filename();
+                    $output .= $value['file']->get_filename();
                     $output .= html_writer::end_tag('li');
                 }
                 $output .= html_writer::end_tag('ul');
@@ -230,6 +258,11 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                         'height' => 'auto',
                     )
                 );
+                foreach ($sorted_arr['audio'] as $key => $value) {
+                    if (!empty($value['caption'])) {
+                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption']);
+                    }
+                }
                 $output .= html_writer::end_tag('audio');
                 // Audios
                 $output .= html_writer::empty_tag('ul', array(
@@ -237,15 +270,15 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                     'data-player' => 'ableplayer_audio',
                     'data-embedded' => ''
                 ));
-                foreach ($sorted_arr['audio'] as $file) {
-                    $videourl = $this->util_get_file_url($file);
-                    $mimtype = explode('/', $file->get_mimetype());
+                foreach ($sorted_arr['audio'] as $key => $value) {
+                    $videourl = $this->util_get_file_url($value['file']);
+                    $mimtype = explode('/', $value['file']->get_mimetype());
                     $output .= html_writer::empty_tag(
                         'li',
                         array('data-' . $mimtype[1] => $videourl,
                             'class' => 'data-' . $mimtype[0])
                     );
-                    $output .= $file->get_filename();
+                    $output .= $value['file']->get_filename();
                     $output .= html_writer::end_tag('li');
                 }
                 $output .= html_writer::end_tag('ul');
@@ -258,7 +291,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                     'preload' => 'auto',
                     'width' => 'auto',
                     'height' => 'auto',
-                    //'poster' => $posterurl,
+                    'poster' => $posterurl,
                 )
             );
             foreach ($videos as $file) {
@@ -271,6 +304,13 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                             'type' => $mimetype,
                             'data-desc-src' => '')
                     );
+                }
+            }
+            if (!empty($captions)) {
+                foreach ($captions as $key => $value) {
+                    if (!empty($value)) {
+                        $output .= $this->get_video_caption_track_elements_html($contextid, $value);
+                    }
                 }
             }
             $output .= html_writer::end_tag('video');
@@ -286,47 +326,46 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
      * @param int $contextid
      * @return string HTML
      */
-    private function get_video_caption_track_elements_html($contextid) {
+    private function get_video_caption_track_elements_html($contextid, $file) {
         $output = '';
         $first = true;
-        $captions = $this->util_get_area_files($contextid, 'captions');
-        foreach ($captions as $file) {
-            if ($mimetype = $file->get_mimetype()) {
-                $captionurl = $this->util_get_file_url($file);
 
-                // Get or construct caption label for video.js player.
-                $filename = $file->get_filename();
-                $dot = strrpos($filename, '.');
-                if ($dot) {
-                    $label = substr($filename, 0, $dot);
-                } else {
-                    $label = $filename;
-                }
+        if ($mimetype = $file->get_mimetype()) {
+            $captionurl = $this->util_get_file_url($file);
 
-                // Perhaps filename is a three letter ISO 6392 language code (e.g. eng, swe)?
-                if (preg_match('/^[a-z]{3}$/', $label)) {
-                    $maybelabel = get_string($label, 'core_iso6392');
-
-                    /* Strings not in language files come back as [[string]], don't
-                       use those for labels. */
-                    if (substr($maybelabel, 0, 2) !== '[[' ||
-                        substr($maybelabel, -2, 2) === ']]') {
-                        $label = $maybelabel;
-                    }
-                }
-
-                $options = array('kind' => 'captions',
-                    'src' => $captionurl,
-                    'label' => $label);
-                if ($first) {
-                    $options['default'] = 'default';
-                    $first = false;
-                }
-
-                // Track seems to need closing tag in IE9 (!).
-                $output .= html_writer::tag('track', '', $options);
+            // Get or construct caption label for video.js player.
+            $filename = $file->get_filename();
+            $dot = strrpos($filename, '.');
+            if ($dot) {
+                $label = substr($filename, 0, $dot);
+            } else {
+                $label = $filename;
             }
+
+            // Perhaps filename is a three letter ISO 6392 language code (e.g. eng, swe)?
+            if (preg_match('/^[a-z]{3}$/', $label)) {
+                $maybelabel = get_string($label, 'core_iso6392');
+
+                /* Strings not in language files come back as [[string]], don't
+                   use those for labels. */
+                if (substr($maybelabel, 0, 2) !== '[[' ||
+                    substr($maybelabel, -2, 2) === ']]') {
+                    $label = $maybelabel;
+                }
+            }
+
+            $options = array('kind' => 'captions',
+                'src' => $captionurl,
+                'label' => $label);
+            if ($first) {
+                $options['default'] = 'default';
+                $first = false;
+            }
+
+            // Track seems to need closing tag in IE9 (!).
+            $output .= html_writer::tag('track', '', $options);
         }
+
 
         return $output;
     }

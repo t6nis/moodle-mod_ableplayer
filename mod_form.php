@@ -61,15 +61,11 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         //--------------------------------------- MEDIA SOURCE ----------------------------------------
         $mform->addElement('header', 'ableplayersource', get_string('ableplayersource', 'ableplayer'));
 
-        // ableplayerfile
-        //$mform->addElement('filemanager', 'file', get_string('ableplayerfile', 'ableplayer'), null, array('subdirs' => 0, 'accepted_types' => ableplayer_video_extensions()));
-        //$mform->addHelpButton('file', 'ableplayerfile', 'ableplayer');
-
         // Medias file manager.
         $options = array('subdirs' => false,
             'maxbytes' => 0,
             'maxfiles' => -1,
-            'accepted_types' => array('.mp4', '.webm', '.ogv', '.mp3'));
+            'accepted_types' => array('.mp4', '.webm', '.webv', '.ogg', '.ogv', '.oga', '.wav', '.mp3'));
         $mform->addElement(
             'filemanager',
             'medias',
@@ -78,6 +74,32 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             $options);
         $mform->addHelpButton('medias', 'medias', 'ableplayer');
         $mform->addRule('medias', null, 'required', null, 'client');
+
+        // Posters file manager.
+        $options = array('subdirs' => false,
+            'maxbytes' => 0,
+            'maxfiles' => 1,
+            'accepted_types' => array('image'));
+        $mform->addElement(
+            'filemanager',
+            'posters',
+            get_string('posters', 'ableplayer'),
+            null,
+            $options);
+        $mform->addHelpButton('posters', 'posters', 'ableplayer');
+
+        // Captions file manager.
+        $options = array('subdirs' => false,
+            'maxbytes' => 0,
+            'maxfiles' => -1,
+            'accepted_types' => array('.vtt'));
+        $mform->addElement(
+            'filemanager',
+            'captions',
+            get_string('captions', 'ableplayer'),
+            null,
+            $options);
+        $mform->addHelpButton('captions', 'captions', 'ableplayer');
 
         //-------------------------------------------------------------------------------
         // add standard elements, common to all modules
@@ -88,7 +110,6 @@ class mod_ableplayer_mod_form extends moodleform_mod {
     }
 
     function data_preprocessing(&$default_values) {
-        global $CFG;
 
         if ($this->current->instance) {
             $options = array('subdirs' => false,
@@ -102,7 +123,30 @@ class mod_ableplayer_mod_form extends moodleform_mod {
                 0,
                 $options);
             $default_values['medias'] = $draftitemid;
+
+            $options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => 1);
+            $draftitemid = file_get_submitted_draft_itemid('posters');
+            file_prepare_draft_area($draftitemid,
+                $this->context->id,
+                'mod_ableplayer',
+                'posters',
+                0,
+                $options);
+            $default_values['posters'] = $draftitemid;
+
+            $options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => -1);
+            $draftitemid = file_get_submitted_draft_itemid('captions');
+            file_prepare_draft_area($draftitemid,
+                $this->context->id,
+                'mod_ableplayer',
+                'captions',
+                0,
+                $options);
+            $default_values['captions'] = $draftitemid;
         }
     }
-
 }

@@ -167,15 +167,14 @@ class videofile {
         $add->courseid = $formdata->course;
         $add->intro = $formdata->intro;
         $add->introformat = $formdata->introformat;
-        //$add->width = $formdata->width;
-        //$add->height = $formdata->height;
-        //$add->responsive = $formdata->responsive;
         $returnid = $DB->insert_record('ableplayer', $add);
+
         $this->instance = $DB->get_record('ableplayer',
             array('id' => $returnid),
             '*',
             MUST_EXIST);
         $this->save_files($formdata);
+
         // Cache the course record.
         $this->course = $DB->get_record('course',
             array('id' => $formdata->course),
@@ -374,17 +373,6 @@ class videofile {
                 0
             );
         }
-        // Storage of files from the filemanager (captions).
-        /*$draftitemid = $formdata->captions;
-        if ($draftitemid) {
-            file_save_draft_area_files(
-                $draftitemid,
-                $this->context->id,
-                'mod_ableplayer',
-                'captions',
-                0
-            );
-        }
         // Storage of files from the filemanager (posters).
         $draftitemid = $formdata->posters;
         if ($draftitemid) {
@@ -395,6 +383,17 @@ class videofile {
                 'posters',
                 0
             );
-        }*/
+        }
+        // Storage of files from the filemanager (captions).
+        $draftitemid = $formdata->captions;
+        if ($draftitemid) {
+            file_save_draft_area_files(
+                $draftitemid,
+                $this->context->id,
+                'mod_ableplayer',
+                'captions',
+                0
+            );
+        }
     }
 }

@@ -305,6 +305,8 @@ function ableplayer_update_grades(stdClass $ableplayer, $userid = 0) {
 function ableplayer_get_file_areas($course, $cm, $context) {
     return array(
         'medias' => get_string('filearea_medias', 'ableplayer'),
+        'posters' => get_string('filearea_posters', 'ableplayer'),
+        'captions' => get_string('filearea_captions', 'ableplayer'),
     );
 }
 
@@ -339,7 +341,7 @@ function ableplayer_get_file_info($browser, $areas, $course, $cm, $context, $fil
         return null;
     }
     $fs = get_file_storage();
-    if ($filearea === 'medias') {
+    if ($filearea === 'medias' || $filearea === 'posters' || $filearea === 'captions') {
         $filepath = is_null($filepath) ? '/' : $filepath;
         $filename = is_null($filename) ? '.' : $filename;
         if (!$storedfile = $fs->get_file($context->id,
@@ -388,7 +390,7 @@ function ableplayer_pluginfile($course, $cm, $context, $filearea, array $args, $
     }
     require_login($course, true, $cm);
 
-    if ($filearea !== 'medias') {
+    if ($filearea !== 'medias' && $filearea !== 'posters' && $filearea !== 'captions') {
         // Intro is handled automatically in pluginfile.php.
         return false;
     }
