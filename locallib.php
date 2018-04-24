@@ -175,6 +175,31 @@ class videofile {
             MUST_EXIST);
         $this->save_files($formdata);
 
+        if (!empty($formdata->captions)) {
+            foreach ($formdata->captions as $key => $value) {
+                /*$fs = get_file_storage();
+                $filex = $fs->get_area_files($this->context->id, 'mod_ableplayer', 'captions', $key, 'itemid, filepath, filename', false);
+                $file_details = $fs->get_file_by_hash(key($filex));*/
+                $caption = new stdClass();
+                $caption->ableplayerid = $returnid;
+                $caption->title = $formdata->title[$key];
+                //$caption->filename = $file_details->get_filename();
+                //$caption->itemid = $key;
+                $captionid = $DB->insert_record("ableplayer_captions", $caption, true);
+                // Storage of files from the filemanager (captions).
+                $draftitemid = $value;
+                if ($draftitemid) {
+                    file_save_draft_area_files(
+                        $draftitemid,
+                        $this->context->id,
+                        'mod_ableplayer',
+                        'captions',
+                        $captionid
+                    );
+                }
+            }
+        }
+
         // Cache the course record.
         $this->course = $DB->get_record('course',
             array('id' => $formdata->course),
@@ -198,6 +223,7 @@ class videofile {
         // Delete the instance.
         // Note: all context files are deleted automatically.
         $DB->delete_records('ableplayer', array('id' => $this->get_instance()->id));
+        $DB->delete_records('ableplayer_captions', array('ableplayerid' => $this->get_instance()->id));
         return $result;
     }
     /**
@@ -215,15 +241,58 @@ class videofile {
         $update->course = $formdata->course;
         $update->intro = $formdata->intro;
         $update->introformat = $formdata->introformat;
-        //$update->width = $formdata->width;
-        //$update->height = $formdata->height;
-        //$update->responsive = $formdata->responsive;
         $result = $DB->update_record('ableplayer', $update);
         $this->instance = $DB->get_record('ableplayer',
             array('id' => $update->id),
             '*',
             MUST_EXIST);
         $this->save_files($formdata);
+
+        if (!empty($formdata->captions)) {
+            foreach ($formdata->captions as $key => $value) {
+                $caption = new stdClass();
+                $caption->ableplayerid = $formdata->instance;
+                $caption->title = $formdata->title[$key];
+                /*if (!empty($filex)) {
+                    $caption->filename = $file_details->get_filename();
+                }*/
+                if (isset($formdata->captionid[$key]) && !empty($formdata->captionid[$key])) {//existing choice record
+                    $caption->id = $formdata->captionid[$key];
+                    $draftitemid = $value;
+                    if ($draftitemid) {
+                        file_save_draft_area_files(
+                            $draftitemid,
+                            $this->context->id,
+                            'mod_ableplayer',
+                            'captions',
+                            $formdata->captionid[$key]
+                        );
+                    }
+                    $fs = get_file_storage();
+                    $filex = $fs->get_area_files($this->context->id, 'mod_ableplayer', 'captions', $formdata->captionid[$key], 'itemid, filepath, filename', false);
+                    if (!empty($filex)) {
+                        $DB->update_record("ableplayer_captions", $caption);
+                    } else {
+                        $DB->delete_records("ableplayer_captions", array('id' => $caption->id));
+                    }
+                } else {
+                    //$caption->itemid = $key;
+                    $captionid = $DB->insert_record("ableplayer_captions", $caption, true);
+                    // Storage of files from the filemanager (captions).
+                    $draftitemid = $value;
+                    if ($draftitemid) {
+                        file_save_draft_area_files(
+                            $draftitemid,
+                            $this->context->id,
+                            'mod_ableplayer',
+                            'captions',
+                            $captionid
+                        );
+                    }
+                }
+            }
+        }
+
         return $result;
     }
     /**
@@ -381,17 +450,6 @@ class videofile {
                 $this->context->id,
                 'mod_ableplayer',
                 'posters',
-                0
-            );
-        }
-        // Storage of files from the filemanager (captions).
-        $draftitemid = $formdata->captions;
-        if ($draftitemid) {
-            file_save_draft_area_files(
-                $draftitemid,
-                $this->context->id,
-                'mod_ableplayer',
-                'captions',
                 0
             );
         }

@@ -40,7 +40,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
      * Defines forms elements
      */
     public function definition() {
-        global $CFG;
+        global $CFG, $DB;
 
         $mform = $this->_form;
 
@@ -89,7 +89,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $mform->addHelpButton('posters', 'posters', 'ableplayer');
 
         // Captions file manager.
-        $options = array('subdirs' => false,
+       /*$options = array('subdirs' => false,
             'maxbytes' => 0,
             'maxfiles' => -1,
             'accepted_types' => array('.vtt'));
@@ -99,7 +99,44 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             get_string('captions', 'ableplayer'),
             null,
             $options);
-        $mform->addHelpButton('captions', 'captions', 'ableplayer');
+        $mform->addHelpButton('captions', 'captions', 'ableplayer');*/
+
+        $repeatarray = array();
+        $options = array('subdirs' => false,
+            'maxbytes' => 0,
+            'maxfiles' => 1,
+            'accepted_types' => array('.vtt'));
+        $repeatarray[] = $mform->createElement('header', 'ableplayercaptions', get_string('ableplayercaptions', 'ableplayer'));
+        $repeatarray[] = $mform->createElement(
+            'filemanager',
+            'captions',
+            get_string('captions', 'ableplayer'),
+            null,
+            $options);
+        $repeatarray[] = $mform->createElement('text', 'title', get_string('title', 'ableplayer'));
+        $repeatarray[] = $mform->createElement('hidden', 'captionid', 0);
+
+        if ($this->_instance){
+            $repeatno = $DB->count_records('ableplayer_captions', array('ableplayerid'=>$this->_instance));
+        } else {
+            $repeatno = 1;
+        }
+
+        $repeateloptions = array();
+        /*$repeateloptions['limit']['default'] = 0;
+        $repeateloptions['limit']['disabledif'] = array('limitanswers', 'eq', 0);
+        $repeateloptions['limit']['rule'] = 'numeric';
+        $repeateloptions['limit']['type'] = PARAM_INT;
+
+        $repeateloptions['option']['helpbutton'] = array('choiceoptions', 'choice');
+        $mform->setType('option', PARAM_CLEANHTML);
+        */
+        $mform->setType('title', PARAM_TEXT);
+        $mform->setType('captionid', PARAM_INT);
+
+        $this->repeat_elements($repeatarray, $repeatno,
+            $repeateloptions, 'ableplayercaptions_repeats', 'ableplayercaptions_add_fields', 1, null, true);
+
 
         //-------------------------------------------------------------------------------
         // add standard elements, common to all modules
@@ -110,6 +147,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
     }
 
     function data_preprocessing(&$default_values) {
+        global $DB;
 
         if ($this->current->instance) {
             $options = array('subdirs' => false,
@@ -139,6 +177,25 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             $options = array('subdirs' => false,
                 'maxbytes' => 0,
                 'maxfiles' => -1);
+            $captions = $DB->get_records('ableplayer_captions',array('ableplayerid'=>$this->_instance));
+            foreach (array_values($captions) as $key => $value) {
+                $draftitemid = file_get_submitted_draft_itemid('captions');
+                file_prepare_draft_area($draftitemid,
+                    $this->context->id,
+                    'mod_ableplayer',
+                    'captions',
+                    $value->id,
+                    $options);
+                if ($draftitemid) {
+                    $default_values['captions[' . $key . ']'] = $draftitemid;
+                }
+                $default_values['title['.$key.']'] = $value->title;
+                $default_values['captionid['.$key.']'] = $value->id;
+            }
+
+            /*$options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => -1);
             $draftitemid = file_get_submitted_draft_itemid('captions');
             file_prepare_draft_area($draftitemid,
                 $this->context->id,
@@ -146,7 +203,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
                 'captions',
                 0,
                 $options);
-            $default_values['captions'] = $draftitemid;
+            $default_values['captions'] = $draftitemid;*/
         }
     }
 }

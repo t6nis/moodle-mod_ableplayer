@@ -106,7 +106,7 @@ function ableplayer_update_instance(stdClass $data, mod_ableplayer_mod_form $mfo
  */
 function ableplayer_delete_instance($id) {
     require_once(dirname(__FILE__) . '/locallib.php');
-    $cm = get_coursemodule_from_instance('videofile', $id, 0, false, MUST_EXIST);
+    $cm = get_coursemodule_from_instance('ableplayer', $id, 0, false, MUST_EXIST);
     $context = context_module::instance($cm->id);
     $videofile = new videofile($context, null, null);
     return $videofile->delete_instance();
@@ -126,7 +126,7 @@ function ableplayer_user_outline($course, $user, $mod, $ableplayer) {
     $logs = $DB->get_records(
         'log',
         array('userid' => $user->id,
-            'module' => 'videofile',
+            'module' => 'ableplayer',
             'action' => 'view',
             'info' => $ableplayer->id),
         'time ASC');
@@ -156,7 +156,7 @@ function ableplayer_user_complete($course, $user, $mod, $ableplayer) {
     $logs = $DB->get_records(
         'log',
         array('userid' => $user->id,
-            'module' => 'videofile',
+            'module' => 'ableplayer',
             'action' => 'view',
             'info' => $ableplayer->id),
         'time ASC');
@@ -167,7 +167,7 @@ function ableplayer_user_complete($course, $user, $mod, $ableplayer) {
         $strnumviews = get_string('numviews', '', $numviews);
         echo "$strnumviews - $strmostrecently ".userdate($lastlog->time);
     } else {
-        print_string('neverseen', 'videofile');
+        print_string('neverseen', 'ableplayer');
     }
 }
 
@@ -481,49 +481,4 @@ function ableplayer_video($ableplayer, $cm, $context) {
     //$video .= html_writer::tag('div', $ableplayer->notes, array('id' => 'videoNotes'));
 
     return $video;
-}
-
-/*
- * Enabled video extensions
- */
-function ableplayer_video_extensions() {
-    $extensions = array(
-        '.mp4',
-        '.flv',
-        '.webm',
-        '.MP4',
-        '.FLV',
-        '.WEBM',
-        '.mp3',
-        '.MP3'
-    );
-    return $extensions;
-}
-
-/*
- * Enabled image extensions
- */
-function ableplayer_image_extensions() {
-    $extensions = array(
-        '.jpg',
-        '.jpeg',
-        '.png',
-        '.JPG',
-        '.JPEG',
-        '.PNG'
-    );
-    return $extensions;
-}
-
-/*
- * Enabled captions extensions
- */
-function ableplayer_captions_extensions() {
-    $extensions = array(
-        '.vtt',
-        '.srt',
-        '.VTT',
-        '.SRT'
-    );
-    return $extensions;
 }
