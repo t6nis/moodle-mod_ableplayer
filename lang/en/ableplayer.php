@@ -85,5 +85,8 @@ $string['captions_help'] = 'Captions File (.vtt)';
 $string['captionsfontsize'] = 'Font Size';
 $string['captionsstate'] = 'Show Captions';
 
-$string['title'] = 'Title';
+$string['label'] = 'Label';
 $string['lyricsmode'] = 'Lyrics mode';
+$string['kind'] = 'Kind';
+$string['srclang'] = 'Language';
+

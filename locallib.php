@@ -177,14 +177,11 @@ class videofile {
 
         if (!empty($formdata->captions)) {
             foreach ($formdata->captions as $key => $value) {
-                /*$fs = get_file_storage();
-                $filex = $fs->get_area_files($this->context->id, 'mod_ableplayer', 'captions', $key, 'itemid, filepath, filename', false);
-                $file_details = $fs->get_file_by_hash(key($filex));*/
                 $caption = new stdClass();
                 $caption->ableplayerid = $returnid;
-                $caption->title = $formdata->title[$key];
-                //$caption->filename = $file_details->get_filename();
-                //$caption->itemid = $key;
+                $caption->label = $formdata->label[$key];
+                $caption->kind = $formdata->kind[$key];
+                $caption->srclang = $formdata->srclang[$key];
                 $captionid = $DB->insert_record("ableplayer_captions", $caption, true);
                 // Storage of files from the filemanager (captions).
                 $draftitemid = $value;
@@ -250,13 +247,12 @@ class videofile {
 
         if (!empty($formdata->captions)) {
             foreach ($formdata->captions as $key => $value) {
-                $caption = new stdClass();
-                $caption->ableplayerid = $formdata->instance;
-                $caption->title = $formdata->title[$key];
-                /*if (!empty($filex)) {
-                    $caption->filename = $file_details->get_filename();
-                }*/
                 if (isset($formdata->captionid[$key]) && !empty($formdata->captionid[$key])) {//existing choice record
+                    $caption = new stdClass();
+                    $caption->ableplayerid = $formdata->instance;
+                    $caption->label = $formdata->label[$key];
+                    $caption->kind = $formdata->kind[$key];
+                    $caption->srclang = $formdata->srclang[$key];
                     $caption->id = $formdata->captionid[$key];
                     $draftitemid = $value;
                     if ($draftitemid) {
@@ -265,7 +261,7 @@ class videofile {
                             $this->context->id,
                             'mod_ableplayer',
                             'captions',
-                            $formdata->captionid[$key]
+                            $caption->id
                         );
                     }
                     $fs = get_file_storage();
@@ -276,7 +272,11 @@ class videofile {
                         $DB->delete_records("ableplayer_captions", array('id' => $caption->id));
                     }
                 } else {
-                    //$caption->itemid = $key;
+                    $caption = new stdClass();
+                    $caption->ableplayerid = $formdata->instance;
+                    $caption->label = $formdata->label[$key];
+                    $caption->kind = $formdata->kind[$key];
+                    $caption->srclang = $formdata->srclang[$key];
                     $captionid = $DB->insert_record("ableplayer_captions", $caption, true);
                     // Storage of files from the filemanager (captions).
                     $draftitemid = $value;
@@ -392,6 +392,12 @@ class videofile {
      */
     public function get_context() {
         return $this->context;
+    }
+
+    public function get_captions_settings($id) {
+        global $DB;
+        $captions = $DB->get_records('ableplayer_captions', array('ableplayerid' => $id));
+        return $captions;
     }
     /**
      * Get the current course.

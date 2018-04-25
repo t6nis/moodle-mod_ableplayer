@@ -35,7 +35,6 @@ require_once($CFG->dirroot.'/course/moodleform_mod.php');
  * Module instance settings form
  */
 class mod_ableplayer_mod_form extends moodleform_mod {
-
     /**
      * Defines forms elements
      */
@@ -43,7 +42,6 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         global $CFG, $DB;
 
         $mform = $this->_form;
-
         //-------------------------------------------------------------------------------
         // Adding the "general" fieldset, where all the common settings are showed
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -88,19 +86,6 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             $options);
         $mform->addHelpButton('posters', 'posters', 'ableplayer');
 
-        // Captions file manager.
-       /*$options = array('subdirs' => false,
-            'maxbytes' => 0,
-            'maxfiles' => -1,
-            'accepted_types' => array('.vtt'));
-        $mform->addElement(
-            'filemanager',
-            'captions',
-            get_string('captions', 'ableplayer'),
-            null,
-            $options);
-        $mform->addHelpButton('captions', 'captions', 'ableplayer');*/
-
         $repeatarray = array();
         $options = array('subdirs' => false,
             'maxbytes' => 0,
@@ -112,8 +97,33 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             'captions',
             get_string('captions', 'ableplayer'),
             null,
-            $options);
-        $repeatarray[] = $mform->createElement('text', 'title', get_string('title', 'ableplayer'));
+            $options
+        );
+
+        $kindarray = array(
+            '' => '',
+            'captions' => 'captions',
+            'subtitles' => 'subtitles',
+            'descriptions' => 'descriptions',
+            'chapters' => 'chapters'
+            );
+        $repeatarray[] = $mform->createElement('select', 'kind', get_string('kind', 'ableplayer'), $kindarray);
+
+        // Lang array based on /translations folder files.
+        $langarray = array(
+            '' => '',
+            'en' => 'en',
+            'ca' => 'ca',
+            'de' => 'de',
+            'es' => 'es',
+            'fr' => 'fr',
+            'it' => 'it',
+            'ja' => 'ja',
+            'nb' => 'nb',
+            'nl' => 'nl'
+        );
+        $repeatarray[] = $mform->createElement('select', 'srclang', get_string('srclang', 'ableplayer'), $langarray);
+        $repeatarray[] = $mform->createElement('text', 'label', get_string('label', 'ableplayer'));
         $repeatarray[] = $mform->createElement('hidden', 'captionid', 0);
 
         if ($this->_instance){
@@ -123,21 +133,11 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         }
 
         $repeateloptions = array();
-        /*$repeateloptions['limit']['default'] = 0;
-        $repeateloptions['limit']['disabledif'] = array('limitanswers', 'eq', 0);
-        $repeateloptions['limit']['rule'] = 'numeric';
-        $repeateloptions['limit']['type'] = PARAM_INT;
-
-        $repeateloptions['option']['helpbutton'] = array('choiceoptions', 'choice');
-        $mform->setType('option', PARAM_CLEANHTML);
-        */
-        $mform->setType('title', PARAM_TEXT);
+        $mform->setType('label', PARAM_TEXT);
         $mform->setType('captionid', PARAM_INT);
 
         $this->repeat_elements($repeatarray, $repeatno,
             $repeateloptions, 'ableplayercaptions_repeats', 'ableplayercaptions_add_fields', 1, null, true);
-
-
         //-------------------------------------------------------------------------------
         // add standard elements, common to all modules
         $this->standard_coursemodule_elements();
@@ -176,34 +176,37 @@ class mod_ableplayer_mod_form extends moodleform_mod {
 
             $options = array('subdirs' => false,
                 'maxbytes' => 0,
-                'maxfiles' => -1);
+                'maxfiles' => 1);
             $captions = $DB->get_records('ableplayer_captions',array('ableplayerid'=>$this->_instance));
+
+            // A bit of hack file_get_submitted_draft_itemid()
+            if (!empty($_REQUEST['captions']) && is_array($_REQUEST['captions'])) {
+                $draftitemids = optional_param_array('captions', 0, PARAM_INT);
+            } else {
+                $draftitemids = optional_param('captions', 0, PARAM_INT);
+            }
+
             foreach (array_values($captions) as $key => $value) {
-                $draftitemid = file_get_submitted_draft_itemid('captions');
+                if (is_array($draftitemids)) {
+                    $draftitemid = $draftitemids[$key];
+                } else {
+                    $draftitemid = 0;
+                }
                 file_prepare_draft_area($draftitemid,
                     $this->context->id,
                     'mod_ableplayer',
                     'captions',
                     $value->id,
-                    $options);
+                    $options
+                );
                 if ($draftitemid) {
                     $default_values['captions[' . $key . ']'] = $draftitemid;
                 }
-                $default_values['title['.$key.']'] = $value->title;
+                $default_values['kind['.$key.']'] = $value->kind;
+                $default_values['srclang['.$key.']'] = $value->srclang;
+                $default_values['label['.$key.']'] = $value->label;
                 $default_values['captionid['.$key.']'] = $value->id;
             }
-
-            /*$options = array('subdirs' => false,
-                'maxbytes' => 0,
-                'maxfiles' => -1);
-            $draftitemid = file_get_submitted_draft_itemid('captions');
-            file_prepare_draft_area($draftitemid,
-                $this->context->id,
-                'mod_ableplayer',
-                'captions',
-                0,
-                $options);
-            $default_values['captions'] = $draftitemid;*/
         }
     }
 }

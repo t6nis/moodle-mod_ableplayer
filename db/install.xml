@@ -25,7 +25,9 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
         <FIELD NAME="ableplayerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Ableplayer activity belongs to"/>
-        <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="title field for ableplayer caption"/>
+        <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="title field for ableplayer caption"/>
+        <FIELD NAME="kind" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="title field for ableplayer caption"/>
+        <FIELD NAME="srclang" TYPE="char" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="title field for ableplayer caption"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

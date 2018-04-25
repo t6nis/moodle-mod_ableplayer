@@ -191,12 +191,11 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
      * @param int $contextid
      * @return string HTML
      */
-    private function get_video_source_elements_html($contextid) {
+    private function get_video_source_elements_html($contextid, $captions_settings) {
         $output = '';
         $videos = $this->util_get_area_files($contextid, 'medias');
         $posterurl = $this->get_poster_image($contextid);
         $captions = $this->get_captions($contextid);
-
         $videoscnt = count($videos);
         if ($videoscnt > 1) {
             $sorted_arr = array();
@@ -223,9 +222,10 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                         'poster' => $posterurl,
                     )
                 );
+
                 foreach ($sorted_arr['audio'] as $key => $value) {
                     if (!empty($value['caption'])) {
-                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption']);
+                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption'], $captions_settings);
                     }
                 }
                 $output .= html_writer::end_tag('video');
@@ -260,7 +260,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                 );
                 foreach ($sorted_arr['audio'] as $key => $value) {
                     if (!empty($value['caption'])) {
-                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption']);
+                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption'], $captions_settings);
                     }
                 }
                 $output .= html_writer::end_tag('audio');
@@ -309,7 +309,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             if (!empty($captions)) {
                 foreach ($captions as $key => $value) {
                     if (!empty($value)) {
-                        $output .= $this->get_video_caption_track_elements_html($contextid, $value);
+                        $output .= $this->get_video_caption_track_elements_html($contextid, $value, $captions_settings);
                     }
                 }
             }
@@ -326,13 +326,11 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
      * @param int $contextid
      * @return string HTML
      */
-    private function get_video_caption_track_elements_html($contextid, $file) {
+    private function get_video_caption_track_elements_html($contextid, $file, $captions_settings) {
         $output = '';
-        $first = true;
 
         if ($mimetype = $file->get_mimetype()) {
             $captionurl = $this->util_get_file_url($file);
-
             // Get or construct caption label for video.js player.
             $filename = $file->get_filename();
             $dot = strrpos($filename, '.');
@@ -341,7 +339,6 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             } else {
                 $label = $filename;
             }
-
             // Perhaps filename is a three letter ISO 6392 language code (e.g. eng, swe)?
             if (preg_match('/^[a-z]{3}$/', $label)) {
                 $maybelabel = get_string($label, 'core_iso6392');
@@ -354,13 +351,20 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                 }
             }
 
-            $options = array('kind' => 'captions',
-                'src' => $captionurl,
-                'label' => $label);
-            if ($first) {
-                $options['default'] = 'default';
-                $first = false;
+            $options = array();
+            $options['kind'] = 'captions';
+            $options['src'] = $captionurl;
+            if (in_array($file->get_itemid(), array_keys($captions_settings))) {
+                $itemid = $file->get_itemid();
+                if (!empty($captions_settings[$itemid]->kind)) {
+                    $options['kind'] = $captions_settings[$itemid]->kind;
+                }
+                $label = (!empty($captions_settings[$itemid]->label) ? $captions_settings[$itemid]->label : $label);
+                if (!empty($captions_settings[$itemid]->srclang)) {
+                    $options['srclang'] = $captions_settings[$itemid]->srclang;
+                }
             }
+            $options['label'] = $label;
 
             // Track seems to need closing tag in IE9 (!).
             $output .= html_writer::tag('track', '', $options);
@@ -418,7 +422,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
     public function video(videofile $videofile) {
         $output  = '';
         $contextid = $videofile->get_context()->id;
-
+        $captions_settings = $videofile->get_captions_settings($videofile->get_instance()->id);
         // Open videofile div.
         /*$vclass = ($videofile->get_instance()->responsive ?
             'videofile videofile-responsive' : 'videofile');
@@ -428,7 +432,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
         //$posterurl = $this->get_poster_image($contextid);
 
         // Elements for video sources.
-        $output .= $this->get_video_source_elements_html($contextid);
+        $output .= $this->get_video_source_elements_html($contextid, $captions_settings);
 
         // Elements for caption tracks.
         //$output .= $this->get_video_caption_track_elements_html($contextid);
