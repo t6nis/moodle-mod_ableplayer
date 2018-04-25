@@ -65,7 +65,7 @@ echo $OUTPUT->header();
 echo '<script src="thirdparty/modernizr.custom.js"></script>';
 echo '<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>';
 echo '<script src="thirdparty/js.cookie.js"></script>';
-echo '<link rel="stylesheet" href="styles/ableplayer.min.css" type="text/css"/>';
+echo '<link rel="stylesheet" href="styles/ableplayer.css" type="text/css"/>';
 echo '<script src="js/ableplayer.min.js"></script>';
 
 if ($ableplayer->intro) { // Conditions to show the intro can change to look for own settings or whatever
@@ -75,6 +75,6 @@ if ($ableplayer->intro) { // Conditions to show the intro can change to look for
 //echo ableplayer_video($ableplayer, $cm, $context);
 $renderer = $PAGE->get_renderer('mod_ableplayer');
 echo $renderer->video_page($videofile);
-
+echo '<div id="transcript-placeholder"></div>';
 // Finish the page
 echo $OUTPUT->footer();

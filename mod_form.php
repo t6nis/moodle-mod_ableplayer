@@ -57,7 +57,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $this->standard_intro_elements();
 
         //--------------------------------------- MEDIA SOURCE ----------------------------------------
-        $mform->addElement('header', 'ableplayersource', get_string('ableplayersource', 'ableplayer'));
+        $mform->addElement('header', 'ableplayermedias', get_string('medias', 'ableplayer'));
 
         // Medias file manager.
         $options = array('subdirs' => false,
@@ -85,6 +85,27 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             null,
             $options);
         $mform->addHelpButton('posters', 'posters', 'ableplayer');
+
+        //Mode
+        $mode_array = array(
+            '' => '',
+            'playsinline' => get_string('playsinline', 'ableplayer'),
+            'data-lyrics-mode' => get_string('lyricsmode', 'ableplayer'),
+        );
+        $mform->addElement('select', 'mode', get_string('mode', 'ableplayer'), $mode_array);
+
+        $langarray = array(
+            'en' => 'en',
+            'ca' => 'ca',
+            'de' => 'de',
+            'es' => 'es',
+            'fr' => 'fr',
+            'it' => 'it',
+            'ja' => 'ja',
+            'nb' => 'nb',
+            'nl' => 'nl'
+        );
+        $mform->addElement('select', 'lang', get_string('lang', 'ableplayer'), $langarray);
 
         $repeatarray = array();
         $options = array('subdirs' => false,

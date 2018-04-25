@@ -167,6 +167,8 @@ class videofile {
         $add->courseid = $formdata->course;
         $add->intro = $formdata->intro;
         $add->introformat = $formdata->introformat;
+        $add->mode = $formdata->mode;
+        $add->lang = $formdata->lang;
         $returnid = $DB->insert_record('ableplayer', $add);
 
         $this->instance = $DB->get_record('ableplayer',
@@ -238,6 +240,8 @@ class videofile {
         $update->course = $formdata->course;
         $update->intro = $formdata->intro;
         $update->introformat = $formdata->introformat;
+        $update->mode = $formdata->mode;
+        $update->lang = $formdata->lang;
         $result = $DB->update_record('ableplayer', $update);
         $this->instance = $DB->get_record('ableplayer',
             array('id' => $update->id),

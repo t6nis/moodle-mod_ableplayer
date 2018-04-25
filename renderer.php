@@ -191,7 +191,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
      * @param int $contextid
      * @return string HTML
      */
-    private function get_video_source_elements_html($contextid, $captions_settings) {
+    private function get_video_source_elements_html($contextid, $captions_settings, $ableplayer) {
         $output = '';
         $videos = $this->util_get_area_files($contextid, 'medias');
         $posterurl = $this->get_poster_image($contextid);
@@ -210,17 +210,27 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                     $i++;
                 }
             }
-
+            // General settings.
+            $options = array(
+                'data-able-player' => '',
+                'preload' => 'auto',
+                'width' => 'auto',
+                'height' => 'auto',
+            );
+            if (!empty($ableplayer->mode)) {
+                $options[$ableplayer->mode] = '';
+            }
+            if (!empty($ableplayer->lang)) {
+                $options['data-lang'] = $ableplayer->lang;
+                $options['data-force-lang'] = '';
+            }
+            
             if (!empty($sorted_arr['video'])) {
+                $options['id'] = 'ableplayer_video';
+                $options['poster'] = $posterurl;
                 $output .= html_writer::start_tag(
                     'video',
-                    array('id' => 'ableplayer_video',
-                        'data-able-player' => '',
-                        'preload' => 'auto',
-                        'width' => 'auto',
-                        'height' => 'auto',
-                        'poster' => $posterurl,
-                    )
+                    $options
                 );
 
                 foreach ($sorted_arr['audio'] as $key => $value) {
@@ -249,14 +259,10 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                 $output .= html_writer::end_tag('ul');
             }
             if (!empty($sorted_arr['audio'])) {
+                $options['id'] = 'ableplayer_audio';
                 $output .= html_writer::start_tag(
                     'audio',
-                    array('id' => 'ableplayer_audio',
-                        'data-able-player' => '',
-                        'preload' => 'auto',
-                        'width' => 'auto',
-                        'height' => 'auto',
-                    )
+                    $options
                 );
                 foreach ($sorted_arr['audio'] as $key => $value) {
                     if (!empty($value['caption'])) {
@@ -284,20 +290,28 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                 $output .= html_writer::end_tag('ul');
             }
         } else {
+            $options = array('id' => 'ableplayer',
+                'data-able-player' => '',
+                //'data-transcript-div' => 'transcript-placeholder',
+                'preload' => 'auto',
+                'width' => 'auto',
+                'height' => 'auto',
+                'poster' => $posterurl,
+            );
+            if (!empty($ableplayer->mode)) {
+                $options[$ableplayer->mode] = '';
+            }
+            if (!empty($ableplayer->lang)) {
+                $options['data-lang'] = $ableplayer->lang;
+                $options['data-force-lang'] = '';
+            }
             $output .= html_writer::start_tag(
                 'video',
-                array('id' => 'ableplayer',
-                    'data-able-player' => '',
-                    'preload' => 'auto',
-                    'width' => 'auto',
-                    'height' => 'auto',
-                    'poster' => $posterurl,
-                )
+                $options
             );
             foreach ($videos as $file) {
                 if ($mimetype = $file->get_mimetype()) {
                     $videourl = $this->util_get_file_url($file);
-
                     $output .= html_writer::empty_tag(
                         'source',
                         array('src' => $videourl,
@@ -423,6 +437,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
         $output  = '';
         $contextid = $videofile->get_context()->id;
         $captions_settings = $videofile->get_captions_settings($videofile->get_instance()->id);
+        $ableplayer = $videofile->get_instance();
         // Open videofile div.
         /*$vclass = ($videofile->get_instance()->responsive ?
             'videofile videofile-responsive' : 'videofile');
@@ -432,7 +447,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
         //$posterurl = $this->get_poster_image($contextid);
 
         // Elements for video sources.
-        $output .= $this->get_video_source_elements_html($contextid, $captions_settings);
+        $output .= $this->get_video_source_elements_html($contextid, $captions_settings, $ableplayer);
 
         // Elements for caption tracks.
         //$output .= $this->get_video_caption_track_elements_html($contextid);

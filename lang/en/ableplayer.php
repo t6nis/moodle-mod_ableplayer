@@ -87,6 +87,9 @@ $string['captionsstate'] = 'Show Captions';
 
 $string['label'] = 'Label';
 $string['lyricsmode'] = 'Lyrics mode';
+$string['playsinline'] = 'Plays inline';
+$string['mode'] = 'Mode';
+$string['lang'] = 'Player Language';
 $string['kind'] = 'Kind';
 $string['srclang'] = 'Language';
 

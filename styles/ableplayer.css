@@ -44,7 +44,8 @@
   position: relative;
   margin: 1em 0;
   width: 100%; /* will be changed dynamically as player is contructed */
-  box-shadow: 0px 0px 16px #262626;
+  /*box-shadow: 0px 0px 16px #262626;*/
+  border: 1px solid #eee;
   z-index: 5000;
 }
 .able-column-left {
@@ -889,7 +890,8 @@ div.able-chapters-div button::-moz-focus-inner {
 .able-transcript-area {
   border-width: 1px;
   border-style: solid;
-  height: 400px;
+  /*height: 400px;*/
+  height: auto;
   z-index: 7000;
   outline: none;
 }
@@ -968,7 +970,7 @@ div.able-chapters-div button::-moz-focus-inner {
 	outline-color: #8AB839; /* green */
 }
 .able-window-toolbar .transcript-language-select-wrapper {
-  float: right;
+  /*float: right;*/
   padding-right: 30px;
 }
 
