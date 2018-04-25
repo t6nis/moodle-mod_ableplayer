@@ -20,10 +20,8 @@
  * This code fragment is called by moodle_needs_upgrading() and
  * /admin/index.php
  *
- * @package    mod
- * @subpackage ableplayer
- * @author     Tõnis Tartes <tonis.tartes@gmail.com>
- * @copyright  2013 Tõnis Tartes <tonis.tartes@gmail.com>
+ * @package    mod_ableplayer
+ * @author     T6nis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

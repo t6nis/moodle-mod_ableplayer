@@ -15,10 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    mod
- * @subpackage ableplayer
- * @author     Tõnis Tartes <tonis.tartes@gmail.com>
- * @copyright  2013 Tõnis Tartes <tonis.tartes@gmail.com>
+ * @package    mod_ableplayer
+ * @author     T6nis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -66,11 +64,10 @@ function ableplayer_supports($feature) {
  */
 function ableplayer_add_instance(stdClass $data, mod_ableplayer_mod_form $mform = null) {
     require_once(dirname(__FILE__) . '/locallib.php');
-    global $DB, $CFG;
 
     $context = context_module::instance($data->coursemodule);
-    $videofile = new videofile($context, null, null);
-    return $videofile->add_instance($data);
+    $ableplayer = new ableplayer($context, null, null);
+    return $ableplayer->add_instance($data);
 }
 
 /**
@@ -86,12 +83,10 @@ function ableplayer_add_instance(stdClass $data, mod_ableplayer_mod_form $mform 
  */
 function ableplayer_update_instance(stdClass $data, mod_ableplayer_mod_form $mform = null) {
     require_once(dirname(__FILE__) . '/locallib.php');
-    global $DB, $CFG;
 
-    require_once(dirname(__FILE__) . '/locallib.php');
     $context = context_module::instance($data->coursemodule);
-    $videofile = new videofile($context, null, null);
-    return $videofile->update_instance($data);
+    $ableplayer = new ableplayer($context, null, null);
+    return $ableplayer->update_instance($data);
 }
 
 /**
@@ -106,10 +101,11 @@ function ableplayer_update_instance(stdClass $data, mod_ableplayer_mod_form $mfo
  */
 function ableplayer_delete_instance($id) {
     require_once(dirname(__FILE__) . '/locallib.php');
+
     $cm = get_coursemodule_from_instance('ableplayer', $id, 0, false, MUST_EXIST);
     $context = context_module::instance($cm->id);
-    $videofile = new videofile($context, null, null);
-    return $videofile->delete_instance();
+    $ableplayer = new ableplayer($context, null, null);
+    return $ableplayer->delete_instance();
 }
 
 /**
@@ -304,9 +300,10 @@ function ableplayer_update_grades(stdClass $ableplayer, $userid = 0) {
  */
 function ableplayer_get_file_areas($course, $cm, $context) {
     return array(
-        'medias' => get_string('filearea_medias', 'ableplayer'),
-        'posters' => get_string('filearea_posters', 'ableplayer'),
-        'captions' => get_string('filearea_captions', 'ableplayer'),
+        'media' => get_string('filearea_medias', 'ableplayer'),
+        'desc' => get_string('filearea_descs', 'ableplayer'),
+        'poster' => get_string('filearea_posters', 'ableplayer'),
+        'caption' => get_string('filearea_captions', 'ableplayer'),
     );
 }
 
@@ -341,7 +338,7 @@ function ableplayer_get_file_info($browser, $areas, $course, $cm, $context, $fil
         return null;
     }
     $fs = get_file_storage();
-    if ($filearea === 'medias' || $filearea === 'posters' || $filearea === 'captions') {
+    if ($filearea === 'media' || $filearea === 'poster' || $filearea === 'caption' || $filearea === 'desc') {
         $filepath = is_null($filepath) ? '/' : $filepath;
         $filename = is_null($filename) ? '.' : $filename;
         if (!$storedfile = $fs->get_file($context->id,
@@ -390,7 +387,7 @@ function ableplayer_pluginfile($course, $cm, $context, $filearea, array $args, $
     }
     require_login($course, true, $cm);
 
-    if ($filearea !== 'medias' && $filearea !== 'posters' && $filearea !== 'captions') {
+    if ($filearea !== 'media' && $filearea !== 'poster' && $filearea !== 'caption' && $filearea !== 'desc') {
         // Intro is handled automatically in pluginfile.php.
         return false;
     }
@@ -460,25 +457,4 @@ function ableplayer_extend_navigation(navigation_node $navref, stdclass $course,
  * @param navigation_node $ableplayernode {@link navigation_node}
  */
 function ableplayer_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $ableplayernode=null) {
-}
-
-
-/**
-* Construct Javascript SWFObject embed code for <body> section of view.php
-* Please note: some URLs append a '?'.time(); query to prevent browser caching
-*
-* @param $ableplayer (mdl_mplayer DB record for current mplayer module instance)
-* @return string
-*/
-function ableplayer_video($ableplayer, $cm, $context) {
-
-    global $CFG, $COURSE, $CFG;
-
-    $video = ableplayer_player_helper($ableplayer, $cm, $context);
-
-    //Notes
-    //$ableplayer->notes = file_rewrite_pluginfile_urls($ableplayer->notes, 'pluginfile.php', $context->id, 'mod_ableplayer', 'notes', 0);
-    //$video .= html_writer::tag('div', $ableplayer->notes, array('id' => 'videoNotes'));
-
-    return $video;
 }

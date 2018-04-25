@@ -27,10 +27,8 @@
  */
 
 /**
- * @package    mod
- * @subpackage ableplayer
+ * @package    mod_ableplayer
  * @author     Tõnis Tartes <tonis.tartes@gmail.com>
- * @copyright  2013 Tõnis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

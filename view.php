@@ -17,13 +17,8 @@
 /**
  * Prints a particular instance of ableplayer
  *
- * You can have a rather longer description of the file as well,
- * if you like, and it can span multiple lines.
- *
- * @package    mod
- * @subpackage ableplayer
- * @author     Tõnis Tartes <tonis.tartes@gmail.com>
- * @copyright  2013 Tõnis Tartes <tonis.tartes@gmail.com>
+ * @package    mod_ableplayer
+ * @author     T6nis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,22 +27,17 @@ require_once(dirname(__FILE__).'/lib.php');
 require_once(dirname(__FILE__).'/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
 
-$id = optional_param('id', 0, PARAM_INT); // course_module ID, or
-$n  = optional_param('n', 0, PARAM_INT);  // ableplayer instance ID - it should be named as the first character of the module
+$id = optional_param('id', 0, PARAM_INT);
 
 if ($id) {
-    $cm         = get_coursemodule_from_id('ableplayer', $id, 0, false, MUST_EXIST);
-    $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-    $ableplayer  = $DB->get_record('ableplayer', array('id' => $cm->instance), '*', MUST_EXIST);
-} elseif ($n) {
-    $ableplayer  = $DB->get_record('ableplayer', array('id' => $n), '*', MUST_EXIST);
-    $course     = $DB->get_record('course', array('id' => $ableplayer->course), '*', MUST_EXIST);
-    $cm         = get_coursemodule_from_instance('ableplayer', $ableplayer->id, $course->id, false, MUST_EXIST);
+    $cm = get_coursemodule_from_id('ableplayer', $id, 0, false, MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+    $ableplayer = $DB->get_record('ableplayer', array('id' => $cm->instance), '*', MUST_EXIST);
 }
 
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
-$videofile = new videofile($context, $cm, $course);
+$ableplayer_media = new ableplayer($context, $cm, $course);
 
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
@@ -72,9 +62,9 @@ if ($ableplayer->intro) { // Conditions to show the intro can change to look for
     echo $OUTPUT->box(format_module_intro('ableplayer', $ableplayer, $cm->id), 'generalbox mod_introbox', 'ableplayerintro');
 }
 
-//echo ableplayer_video($ableplayer, $cm, $context);
 $renderer = $PAGE->get_renderer('mod_ableplayer');
-echo $renderer->video_page($videofile);
+echo $renderer->ableplayer_page($ableplayer_media);
 echo '<div id="transcript-placeholder"></div>';
+
 // Finish the page
 echo $OUTPUT->footer();

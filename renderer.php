@@ -18,7 +18,7 @@
  * Ableplayer module renderering methods are defined here.
  *
  * @package    mod_ableplayer
- * @copyright  2013 Jonas Nockert <jonasnockert@gmail.com>
+ * @author     T6nis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,95 +27,23 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/ableplayer/locallib.php');
 
 /**
- * Videofile module renderer class
+ * ableplayer module renderer class
  */
 class mod_ableplayer_renderer extends plugin_renderer_base {
 
     /**
-     * Renders the videofile page header.
+     * Render the ableplayer page
      *
-     * @param videofile videofile
-     * @return string
-     */
-    public function video_header($videofile) {
-        global $CFG;
-
-        $output = '';
-
-        $name = format_string($videofile->get_instance()->name,
-            true,
-            $videofile->get_course());
-        $title = $this->page->course->shortname . ': ' . $name;
-
-        $coursemoduleid = $videofile->get_course_module()->id;
-        $context = context_module::instance($coursemoduleid);
-
-        // Add videojs css and js files.
-        //$this->page->requires->css('/mod/videofile/video-js-4.12.8/video-js.min.css');
-        //$this->page->requires->js('/mod/videofile/video-js-4.12.8/video.js', true);
-
-        // Set the videojs flash fallback url.
-        /*$swfurl = new moodle_url('/mod/videofile/video-js-4.12.8/video-js.swf');
-        $this->page->requires->js_init_code(
-            'videojs.options.flash.swf = "' . $swfurl . '";');
-
-        // Yui module handles responsive mode video resizing.
-        if ($videofile->get_instance()->responsive) {
-            $config = get_config('videofile');
-
-            $this->page->requires->yui_module(
-                'moodle-mod_videofile-videojs',
-                'M.mod_videofile.videojs.init',
-                array($videofile->get_instance()->id,
-                    $swfurl,
-                    $videofile->get_instance()->width,
-                    $videofile->get_instance()->height,
-                    (boolean) $config->limitdimensions));
-        }*/
-
-        // Header setup.
-        $this->page->set_title($title);
-        $this->page->set_heading($this->page->course->fullname);
-
-        $output .= $this->output->header();
-        $output .= $this->output->heading($name, 3);
-
-        if (!empty($videofile->get_instance()->intro)) {
-            $output .= $this->output->box_start('generalbox boxaligncenter', 'intro');
-            $output .= format_module_intro('ableplayer',
-                $videofile->get_instance(),
-                $coursemoduleid);
-            $output .= $this->output->box_end();
-        }
-
-        return $output;
-    }
-
-    /**
-     * Render the footer
-     *
-     * @return string
-     */
-    public function video_footer() {
-        return $this->output->footer();
-    }
-
-    /**
-     * Render the videofile page
-     *
-     * @param videofile videofile
+     * @param ableplayer
      * @return string The page output.
      */
-    public function video_page($videofile) {
+    public function ableplayer_page($ableplayer_media) {
         $output = '';
-        //$output .= $this->video_header($videofile);
-        $output .= $this->video($videofile);
-        //$output .= $this->video_footer();
+
+        $output .= $this->ableplayer($ableplayer_media);
 
         return $output;
     }
-
-
     /**
      * Utility function for getting a file URL
      *
@@ -132,7 +60,6 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             $file->get_filename(),
             false);
     }
-
     /**
      * Utility function for getting area files
      *
@@ -150,21 +77,35 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             false);
     }
     /**
-     * Utility function for getting the video poster image
+     * Utility function for getting the captions
      *
      * @param int $contextid
      * @return url to the poster image (or the default image)
      */
     private function get_captions($contextid) {
         $captions = array();
-        $captions_files = $this->util_get_area_files($contextid, 'captions');
+        $captions_files = $this->util_get_area_files($contextid, 'caption');
         foreach ($captions_files as $file) {
             $captions[] = $file;
         }
 
         return $captions;
     }
+    /**
+     * Utility function for getting the descs
+     *
+     * @param int $contextid
+     * @return url to the poster image (or the default image)
+     */
+    private function get_descs($contextid) {
+        $captions = array();
+        $captions_files = $this->util_get_area_files($contextid, 'desc');
+        foreach ($captions_files as $file) {
+            $captions[] = $file;
+        }
 
+        return $captions;
+    }
     /**
      * Utility function for getting the video poster image
      *
@@ -173,30 +114,29 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
      */
     private function get_poster_image($contextid) {
         $posterurl = null;
-        $posters = $this->util_get_area_files($contextid, 'posters');
-        foreach ($posters as $file) {
+        $poster = $this->util_get_area_files($contextid, 'poster');
+        foreach ($poster as $file) {
             $posterurl = $this->util_get_file_url($file);
             break;  // Only one poster allowed.
-        }
-        if (!$posterurl) {
-            $posterurl = $this->pix_url('moodle-logo', 'ableplayer');
         }
 
         return $posterurl;
     }
-
     /**
      * Utility function for creating the video source elements HTML.
      *
      * @param int $contextid
      * @return string HTML
      */
-    private function get_video_source_elements_html($contextid, $captions_settings, $ableplayer) {
+    private function get_ableplayer_html($contextid, $captions_settings, $ableplayer) {
         $output = '';
-        $videos = $this->util_get_area_files($contextid, 'medias');
+
+        $videos = $this->util_get_area_files($contextid, 'media');
         $posterurl = $this->get_poster_image($contextid);
         $captions = $this->get_captions($contextid);
+        $desc = $this->get_descs($contextid);
         $videoscnt = count($videos);
+
         if ($videoscnt > 1) {
             $sorted_arr = array();
             $i = 0;
@@ -210,6 +150,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                     $i++;
                 }
             }
+
             // General settings.
             $options = array(
                 'data-able-player' => '',
@@ -233,30 +174,57 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                     $options
                 );
 
-                foreach ($sorted_arr['audio'] as $key => $value) {
-                    if (!empty($value['caption'])) {
-                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption'], $captions_settings);
+                // Playlist?
+                if ($ableplayer->playlist == 1) {
+                    foreach ($sorted_arr['video'] as $key => $value) {
+                        if (!empty($value['caption'])) {
+                            $output .= $this->get_captions_html($contextid, $value['caption'], $captions_settings);
+                        }
                     }
+                    $output .= html_writer::end_tag('video'); // IF playlist end video tag early
+                    $output .= html_writer::empty_tag('ul', array(
+                        'class' => 'able-playlist',
+                        'data-player' => 'ableplayer_video',
+                        'data-embedded' => ''
+                    ));
+                    foreach ($sorted_arr['video'] as $key => $value) {
+                        $videourl = $this->util_get_file_url($value['file']);
+                        $mimtype = explode('/', $value['file']->get_mimetype());
+                        $output .= html_writer::empty_tag(
+                            'li',
+                            array('data-' . $mimtype[1] => $videourl,
+                                'class' => 'data-' . $mimtype[0])
+                        );
+                        $output .= $value['file']->get_filename();
+                        $output .= html_writer::end_tag('li');
+                    }
+                    $output .= html_writer::end_tag('ul');
+                } else {
+                    $i = 0;
+                    foreach ($videos as $file) {
+                        if ($mimetype = $file->get_mimetype()) {
+                            $videourl = $this->util_get_file_url($file);
+                            $source_opts = array(
+                                'src' => $videourl,
+                                'type' => $mimetype
+                            );
+                            if (!empty($desc[$i])) {
+                                $source_opts['data-desc-src'] = $this->util_get_file_url($desc[$i]);
+                            }
+                            $output .= html_writer::empty_tag(
+                                'source',
+                                $source_opts
+                                );
+                            $i++;
+                        }
+                    }
+                    foreach ($sorted_arr['video'] as $key => $value) {
+                        if (!empty($value['caption'])) {
+                            $output .= $this->get_captions_html($contextid, $value['caption'], $captions_settings);
+                        }
+                    }
+                    $output .= html_writer::end_tag('video');
                 }
-                $output .= html_writer::end_tag('video');
-                // Videos
-                $output .= html_writer::empty_tag('ul', array(
-                    'class' => 'able-playlist',
-                    'data-player' => 'ableplayer_video',
-                    'data-embedded' => ''
-                ));
-                foreach ($sorted_arr['video'] as $key => $value) {
-                    $videourl = $this->util_get_file_url($value['file']);
-                    $mimtype = explode('/', $value['file']->get_mimetype());
-                    $output .= html_writer::empty_tag(
-                        'li',
-                        array('data-' . $mimtype[1] => $videourl,
-                            'class' => 'data-' . $mimtype[0])
-                    );
-                    $output .= $value['file']->get_filename();
-                    $output .= html_writer::end_tag('li');
-                }
-                $output .= html_writer::end_tag('ul');
             }
             if (!empty($sorted_arr['audio'])) {
                 $options['id'] = 'ableplayer_audio';
@@ -266,7 +234,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                 );
                 foreach ($sorted_arr['audio'] as $key => $value) {
                     if (!empty($value['caption'])) {
-                        $output .= $this->get_video_caption_track_elements_html($contextid, $value['caption'], $captions_settings);
+                        $output .= $this->get_captions_html($contextid, $value['caption'], $captions_settings);
                     }
                 }
                 $output .= html_writer::end_tag('audio');
@@ -309,6 +277,16 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                 'video',
                 $options
             );
+
+            // Descriptive file url
+            $descurl = '';
+            $desc = $this->util_get_area_files($contextid, 'desc');
+            foreach ($desc as $file) {
+                if ($mimetype = $file->get_mimetype()) {
+                    $descurl = $this->util_get_file_url($file);
+                }
+            }
+
             foreach ($videos as $file) {
                 if ($mimetype = $file->get_mimetype()) {
                     $videourl = $this->util_get_file_url($file);
@@ -316,23 +294,21 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
                         'source',
                         array('src' => $videourl,
                             'type' => $mimetype,
-                            'data-desc-src' => '')
+                            'data-desc-src' => $descurl)
                     );
                 }
             }
             if (!empty($captions)) {
                 foreach ($captions as $key => $value) {
                     if (!empty($value)) {
-                        $output .= $this->get_video_caption_track_elements_html($contextid, $value, $captions_settings);
+                        $output .= $this->get_captions_html($contextid, $value, $captions_settings);
                     }
                 }
             }
             $output .= html_writer::end_tag('video');
         }
-
         return $output;
     }
-
     /**
      * Utility function for creating the video caption track elements
      * HTML.
@@ -340,7 +316,7 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
      * @param int $contextid
      * @return string HTML
      */
-    private function get_video_caption_track_elements_html($contextid, $file, $captions_settings) {
+    private function get_captions_html($contextid, $file, $captions_settings) {
         $output = '';
 
         if ($mimetype = $file->get_mimetype()) {
@@ -383,83 +359,22 @@ class mod_ableplayer_renderer extends plugin_renderer_base {
             // Track seems to need closing tag in IE9 (!).
             $output .= html_writer::tag('track', '', $options);
         }
-
-
         return $output;
     }
-
     /**
-     * Utility function for getting the HTML for the alternative video
-     * links in case video isn't showing/playing properly.
+     * Renders ableplayer video.
      *
-     * @param int $contextid
+     * @param ableplayer $videofile
      * @return string HTML
      */
-    private function get_alternative_video_links_html($contextid) {
-        $output = '';
-        $videooutput = '';
-
-        $first = true;
-        $videos = $this->util_get_area_files($contextid, 'medias');
-        foreach ($videos as $file) {
-            if ($mimetype = $file->get_mimetype()) {
-                $videourl = $this->util_get_file_url($file);
-
-                if ($first) {
-                    $first = false;
-                } else {
-                    $videooutput .= ', ';
-                }
-                $extension = pathinfo($file->get_filename(), PATHINFO_EXTENSION);
-                $videooutput .= html_writer::tag('a',
-                    $extension,
-                    array('href' => $videourl));
-            }
-        }
-
-        $output = html_writer::tag('p',
-            get_string('video_not_playing',
-                'videofile',
-                $videooutput),
-            array());
-        return html_writer::tag('div',
-            $output,
-            array('class' => 'videofile-not-playing-msg'));
-    }
-
-    /**
-     * Renders videofile video.
-     *
-     * @param videofile $videofile
-     * @return string HTML
-     */
-    public function video(videofile $videofile) {
+    public function ableplayer(ableplayer $ableplayer_media) {
         $output  = '';
-        $contextid = $videofile->get_context()->id;
-        $captions_settings = $videofile->get_captions_settings($videofile->get_instance()->id);
-        $ableplayer = $videofile->get_instance();
-        // Open videofile div.
-        /*$vclass = ($videofile->get_instance()->responsive ?
-            'videofile videofile-responsive' : 'videofile');
-        $output .= $this->output->container_start($vclass);
-        */
-        // Open video tag.
-        //$posterurl = $this->get_poster_image($contextid);
 
-        // Elements for video sources.
-        $output .= $this->get_video_source_elements_html($contextid, $captions_settings, $ableplayer);
+        $contextid = $ableplayer_media->get_context()->id;
+        $captions_settings = $ableplayer_media->get_captions_settings($ableplayer_media->get_instance()->id);
+        $ableplayer = $ableplayer_media->get_instance();
 
-        // Elements for caption tracks.
-        //$output .= $this->get_video_caption_track_elements_html($contextid);
-
-        // Close video tag.
-        //$output .= html_writer::end_tag('video');
-
-        // Alternative video links in case video isn't showing/playing properly.
-        //$output .= $this->get_alternative_video_links_html($contextid);
-
-        // Close videofile div.
-        //$output .= $this->output->container_end();
+        $output .= $this->get_ableplayer_html($contextid, $captions_settings, $ableplayer);
 
         return $output;
     }

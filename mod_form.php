@@ -20,10 +20,8 @@
  * It uses the standard core Moodle formslib. For more info about them, please
  * visit: http://docs.moodle.org/en/Development:lib/formslib.php
  *
- * @package    mod
- * @subpackage ableplayer
- * @author     Tõnis Tartes <tonis.tartes@gmail.com>
- * @copyright  2013 Tõnis Tartes <tonis.tartes@gmail.com>
+ * @package    mod_ableplayer
+ * @author     T6nis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -56,35 +54,29 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         // Adding the standard "intro" and "introformat" fields
         $this->standard_intro_elements();
 
+        //
         //--------------------------------------- MEDIA SOURCE ----------------------------------------
-        $mform->addElement('header', 'ableplayermedias', get_string('medias', 'ableplayer'));
+        $mform->addElement('header', 'ableplayergeneral', get_string('ableplayergeneral', 'ableplayer'));
 
-        // Medias file manager.
-        $options = array('subdirs' => false,
-            'maxbytes' => 0,
-            'maxfiles' => -1,
-            'accepted_types' => array('.mp4', '.webm', '.webv', '.ogg', '.ogv', '.oga', '.wav', '.mp3'));
-        $mform->addElement(
-            'filemanager',
-            'medias',
-            get_string('medias', 'ableplayer'),
-            null,
-            $options);
-        $mform->addHelpButton('medias', 'medias', 'ableplayer');
-        $mform->addRule('medias', null, 'required', null, 'client');
-
-        // Posters file manager.
+        // Poster file manager.
         $options = array('subdirs' => false,
             'maxbytes' => 0,
             'maxfiles' => 1,
             'accepted_types' => array('image'));
         $mform->addElement(
             'filemanager',
-            'posters',
-            get_string('posters', 'ableplayer'),
+            'poster',
+            get_string('poster', 'ableplayer'),
             null,
             $options);
-        $mform->addHelpButton('posters', 'posters', 'ableplayer');
+        $mform->addHelpButton('poster', 'poster', 'ableplayer');
+
+        // Is this playlist?
+        $playlist_array = array(
+            0 => 'No',
+            1 => 'Yes',
+        );
+        $mform->addElement('select', 'playlist', get_string('playlist', 'ableplayer'), $playlist_array);
 
         //Mode
         $mode_array = array(
@@ -108,6 +100,43 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $mform->addElement('select', 'lang', get_string('lang', 'ableplayer'), $langarray);
 
         $repeatarray = array();
+
+        // Media files & description files
+        $options = array('subdirs' => false,
+            'maxbytes' => 0,
+            'maxfiles' => 1,
+            'accepted_types' => array('.mp4', '.webm', '.webv', '.ogg', '.ogv', '.oga', '.wav', '.mp3'));
+        $repeatarray[] = $mform->createElement('header', 'ableplayermedia', get_string('ableplayermedia', 'ableplayer'));
+        $repeatarray[] = $mform->createElement(
+            'filemanager',
+            'media',
+            get_string('ableplayermedia', 'ableplayer'),
+            null,
+            $options
+        );
+        $repeatarray[] = $mform->createElement('hidden', 'mediaid', 0);
+        $repeatarray[] = $mform->createElement(
+            'filemanager',
+            'desc',
+            get_string('ableplayerdescriptionfile', 'ableplayer'),
+            null,
+            $options
+        );
+        $repeatarray[] = $mform->createElement('hidden', 'descid', 0);
+        if ($this->_instance){
+            $repeatno = $DB->count_records('ableplayer_media', array('ableplayerid'=>$this->_instance));
+        } else {
+            $repeatno = 1;
+        }
+        $repeateloptions = array();
+        $mform->setType('mediaid', PARAM_INT);
+        $mform->setType('descid', PARAM_INT);
+
+        $this->repeat_elements($repeatarray, $repeatno,
+            $repeateloptions, 'ableplayermedias_repeats', 'ableplayermedias_add_fields', 1, null, true);
+
+        // Captions
+        $repeatarray = array();
         $options = array('subdirs' => false,
             'maxbytes' => 0,
             'maxfiles' => 1,
@@ -115,7 +144,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $repeatarray[] = $mform->createElement('header', 'ableplayercaptions', get_string('ableplayercaptions', 'ableplayer'));
         $repeatarray[] = $mform->createElement(
             'filemanager',
-            'captions',
+            'caption',
             get_string('captions', 'ableplayer'),
             null,
             $options
@@ -148,7 +177,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $repeatarray[] = $mform->createElement('hidden', 'captionid', 0);
 
         if ($this->_instance){
-            $repeatno = $DB->count_records('ableplayer_captions', array('ableplayerid'=>$this->_instance));
+            $repeatno = $DB->count_records('ableplayer_caption', array('ableplayerid'=>$this->_instance));
         } else {
             $repeatno = 1;
         }
@@ -171,42 +200,87 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         global $DB;
 
         if ($this->current->instance) {
-            $options = array('subdirs' => false,
-                'maxbytes' => 0,
-                'maxfiles' => -1);
-            $draftitemid = file_get_submitted_draft_itemid('medias');
-            file_prepare_draft_area($draftitemid,
-                $this->context->id,
-                'mod_ableplayer',
-                'medias',
-                0,
-                $options);
-            $default_values['medias'] = $draftitemid;
-
+            // Media
             $options = array('subdirs' => false,
                 'maxbytes' => 0,
                 'maxfiles' => 1);
-            $draftitemid = file_get_submitted_draft_itemid('posters');
-            file_prepare_draft_area($draftitemid,
-                $this->context->id,
-                'mod_ableplayer',
-                'posters',
-                0,
-                $options);
-            $default_values['posters'] = $draftitemid;
-
-            $options = array('subdirs' => false,
-                'maxbytes' => 0,
-                'maxfiles' => 1);
-            $captions = $DB->get_records('ableplayer_captions',array('ableplayerid'=>$this->_instance));
-
+            $medias = $DB->get_records('ableplayer_media',array('ableplayerid'=>$this->_instance));
             // A bit of hack file_get_submitted_draft_itemid()
-            if (!empty($_REQUEST['captions']) && is_array($_REQUEST['captions'])) {
-                $draftitemids = optional_param_array('captions', 0, PARAM_INT);
+            if (!empty($_REQUEST['media']) && is_array($_REQUEST['media'])) {
+                $draftitemids = optional_param_array('media', 0, PARAM_INT);
             } else {
-                $draftitemids = optional_param('captions', 0, PARAM_INT);
+                $draftitemids = optional_param('media', 0, PARAM_INT);
             }
-
+            foreach (array_values($medias) as $key => $value) {
+                if (is_array($draftitemids)) {
+                    $draftitemid = $draftitemids[$key];
+                } else {
+                    $draftitemid = 0;
+                }
+                file_prepare_draft_area($draftitemid,
+                    $this->context->id,
+                    'mod_ableplayer',
+                    'media',
+                    $value->id,
+                    $options
+                );
+                if ($draftitemid) {
+                    $default_values['media[' . $key . ']'] = $draftitemid;
+                }
+                $default_values['mediaid['.$key.']'] = $value->id;
+            }
+            // Desc
+            $options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => 1);
+            $mediadescs = $DB->get_records('ableplayer_desc',array('ableplayerid'=>$this->_instance));
+            // A bit of hack file_get_submitted_draft_itemid()
+            if (!empty($_REQUEST['desc']) && is_array($_REQUEST['desc'])) {
+                $draftitemids = optional_param_array('desc', 0, PARAM_INT);
+            } else {
+                $draftitemids = optional_param('desc', 0, PARAM_INT);
+            }
+            foreach (array_values($mediadescs) as $key => $value) {
+                if (is_array($draftitemids)) {
+                    $draftitemid = $draftitemids[$key];
+                } else {
+                    $draftitemid = 0;
+                }
+                file_prepare_draft_area($draftitemid,
+                    $this->context->id,
+                    'mod_ableplayer',
+                    'desc',
+                    $value->id,
+                    $options
+                );
+                if ($draftitemid) {
+                    $default_values['desc[' . $key . ']'] = $draftitemid;
+                }
+                $default_values['descid['.$key.']'] = $value->id;
+            }
+            // Poster
+            $options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => 1);
+            $draftitemid = file_get_submitted_draft_itemid('poster');
+            file_prepare_draft_area($draftitemid,
+                $this->context->id,
+                'mod_ableplayer',
+                'poster',
+                0,
+                $options);
+            $default_values['poster'] = $draftitemid;
+            // Caption
+            $options = array('subdirs' => false,
+                'maxbytes' => 0,
+                'maxfiles' => 1);
+            $captions = $DB->get_records('ableplayer_caption',array('ableplayerid'=>$this->_instance));
+            // A bit of hack file_get_submitted_draft_itemid()
+            if (!empty($_REQUEST['caption']) && is_array($_REQUEST['caption'])) {
+                $draftitemids = optional_param_array('caption', 0, PARAM_INT);
+            } else {
+                $draftitemids = optional_param('captio', 0, PARAM_INT);
+            }
             foreach (array_values($captions) as $key => $value) {
                 if (is_array($draftitemids)) {
                     $draftitemid = $draftitemids[$key];
@@ -216,12 +290,12 @@ class mod_ableplayer_mod_form extends moodleform_mod {
                 file_prepare_draft_area($draftitemid,
                     $this->context->id,
                     'mod_ableplayer',
-                    'captions',
+                    'caption',
                     $value->id,
                     $options
                 );
                 if ($draftitemid) {
-                    $default_values['captions[' . $key . ']'] = $draftitemid;
+                    $default_values['caption[' . $key . ']'] = $draftitemid;
                 }
                 $default_values['kind['.$key.']'] = $value->kind;
                 $default_values['srclang['.$key.']'] = $value->srclang;

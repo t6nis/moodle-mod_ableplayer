@@ -11,7 +11,8 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="name field for moodle instances" />
         <FIELD NAME="intro" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="General introduction of the ableplayer activity" />
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of the intro field (MOODLE, HTML, MARKDOWN...)" />
-        <FIELD NAME="mode" TYPE="char" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
+        <FIELD NAME="playlist" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" UNSIGNED="true" SEQUENCE="false" />
+        <FIELD NAME="mode" TYPE="char" LENGTH="50" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" />
         <FIELD NAME="lang" TYPE="char" LENGTH="2" NOTNULL="true" DEFAULT="en" UNSIGNED="true" SEQUENCE="false" />
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" />
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" />
@@ -23,7 +24,31 @@
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="ableplayer_captions" COMMENT="Default comment for ableplayer please edit me">
+    <TABLE NAME="ableplayer_media" COMMENT="Default comment for ableplayer please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
+        <FIELD NAME="ableplayerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Ableplayer activity belongs to"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ableplayerid" UNIQUE="false" FIELDS="ableplayerid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="ableplayer_desc" COMMENT="Ableplayer description files holder">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
+        <FIELD NAME="ableplayerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Ableplayer activity belongs to"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="ableplayerid" UNIQUE="false" FIELDS="ableplayerid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="ableplayer_caption" COMMENT="Default comment for ableplayer please edit me">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
         <FIELD NAME="ableplayerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Ableplayer activity belongs to"/>

@@ -20,9 +20,8 @@
  * You can have a rather longer description of the file as well,
  * if you like, and it can span multiple lines.
  *
- * @package    mod
- * @subpackage ableplayer
- * @copyright  2013 Tõnis Tartes <tonis.tartes@gmail.com>
+ * @package    mod_ableplayer
+ * @author     T6nis Tartes <tonis.tartes@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -52,7 +51,7 @@ $string['streamer'] = 'Streamer';
 $string['playlists'] = 'Playlist';
 $string['ableplayerplaylist'] = 'Playlist';
 $string['ableplayerplaylist_help'] = 'Playlist help';
-$string['playlist'] = 'Position';
+$string['playlist'] = 'Playlist';
 $string['playlistsize'] = 'Size (pixels)';
 //Behaviour
 $string['behaviour'] = 'Behaviour';
@@ -70,8 +69,8 @@ $string['ableplayerappearance_help'] = 'Apperance help';
 $string['title'] = 'Title';
 $string['width'] = 'Width';
 $string['height'] = 'Height';
-$string['posters'] = 'Poster Images';
-$string['posters_help'] = 'Poster Image (.jpg, .jpeg, .png only)';
+$string['poster'] = 'Poster Image';
+$string['poster_help'] = 'Poster Image (.jpg, .jpeg, .png only)';
 $string['notes'] = 'Notes';
 //captions 
 $string['captions'] = 'Captions';
@@ -93,3 +92,6 @@ $string['lang'] = 'Player Language';
 $string['kind'] = 'Kind';
 $string['srclang'] = 'Language';
 
+$string['ableplayergeneral'] = 'General settings';
+$string['ableplayermedia'] = 'Media file';
+$string['ableplayerdescriptionfile'] = 'Description file';
