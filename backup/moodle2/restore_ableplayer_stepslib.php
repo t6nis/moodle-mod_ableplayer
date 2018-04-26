@@ -29,7 +29,9 @@ class restore_ableplayer_activity_structure_step extends restore_activity_struct
 
         $paths = array();
         $paths[] = new restore_path_element('ableplayer', '/activity/ableplayer');
-
+        $paths[] = new restore_path_element('ableplayer_media', '/activity/ableplayer/medias/media');
+        $paths[] = new restore_path_element('ableplayer_desc', '/activity/ableplayer/descs/desc');
+        $paths[] = new restore_path_element('ableplayer_caption', '/activity/ableplayer/captions/caption');
         // Return the paths wrapped into standard activity structure
         return $this->prepare_activity_structure($paths);
     }
@@ -49,12 +51,48 @@ class restore_ableplayer_activity_structure_step extends restore_activity_struct
         $this->apply_activity_instance($newitemid);
     }
 
+    protected function process_ableplayer_media($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->ableplayerid = $this->get_new_parentid('ableplayer');
+
+        $newitemid = $DB->insert_record('ableplayer_media', $data);
+        $this->set_mapping('ableplayer_media', $oldid, $newitemid, true);
+    }
+
+    protected function process_ableplayer_desc($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->ableplayerid = $this->get_new_parentid('ableplayer');
+
+        $newitemid = $DB->insert_record('ableplayer_desc', $data);
+        $this->set_mapping('ableplayer_desc', $oldid, $newitemid, true);
+    }
+
+    protected function process_ableplayer_caption($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->ableplayerid = $this->get_new_parentid('ableplayer');
+
+        $newitemid = $DB->insert_record('ableplayer_caption', $data);
+        $this->set_mapping('ableplayer_caption', $oldid, $newitemid, true);
+    }
+
     protected function after_execute() {
         // Add ableplayer related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_ableplayer', 'intro', null);
-        $this->add_related_files('mod_ableplayer', 'notes', null);
-        $this->add_related_files('mod_ableplayer', 'file', null);
-        $this->add_related_files('mod_ableplayer', 'captionsfile', null);
-        $this->add_related_files('mod_ableplayer', 'image', null);
+        $this->add_related_files('mod_ableplayer', 'poster', null);
+        $this->add_related_files('mod_ableplayer', 'media', 'ableplayer_media');
+        $this->add_related_files('mod_ableplayer', 'desc', 'ableplayer_desc');
+        $this->add_related_files('mod_ableplayer', 'caption', 'ableplayer_caption');
     }
 }

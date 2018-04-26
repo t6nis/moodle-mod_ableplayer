@@ -53,7 +53,7 @@ class restore_ableplayer_activity_task extends restore_activity_task {
         $contents = array();
 
         $contents[] = new restore_decode_content('ableplayer', array('intro'), 'ableplayer');
-        $contents[] = new restore_decode_content('ableplayer', array('notes'), 'ableplayer');
+        //$contents[] = new restore_decode_content('ableplayer', array('poster'), 'ableplayer');
 
         return $contents;
     }

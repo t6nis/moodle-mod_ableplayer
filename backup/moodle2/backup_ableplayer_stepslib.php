@@ -34,26 +34,44 @@ class backup_ableplayer_activity_structure_step extends backup_activity_structur
 
         // Define each element separated
         $ableplayer = new backup_nested_element('ableplayer', array('id'), array(
-            'name', 'intro', 'introformat', 'timecreated', 'timemodified',
-            'urltype', 'ableplayerfile', 'type', 'streamer', 'playlistposition', 
-            'playlistsize', 'autostart', 'stretching', 'mute', 'controls', 
-            'ableplayerrepeat', 'title', 'width', 'height', 'image', 'notes',
-            'notesformat', 'captionsback', 'captionsfile', 'captionsfontsize', 
-            'captionsstate'));
+            'name', 'intro', 'introformat', 'playlist',
+            'mode', 'lang', 'timecreated', 'timemodified'));
+
+        $medias = new backup_nested_element('medias');
+        $media = new backup_nested_element('media', array('id'), array(
+            'ableplayerid'));
+
+        $descs = new backup_nested_element('descs');
+        $desc = new backup_nested_element('desc', array('id'), array(
+            'ableplayerid'));
+
+        $captions = new backup_nested_element('captions');
+        $caption = new backup_nested_element('caption', array('id'), array(
+            'ableplayerid', 'label', 'kind', 'srclang'));
 
         // Build the tree
+        $ableplayer->add_child($medias);
+        $medias->add_child($media);
+
+        $ableplayer->add_child($descs);
+        $descs->add_child($desc);
+
+        $ableplayer->add_child($captions);
+        $captions->add_child($caption);
 
         // Define sources
         $ableplayer->set_source_table('ableplayer', array('id' => backup::VAR_ACTIVITYID));
-
+        $media->set_source_table('ableplayer_media', array('ableplayerid' => backup::VAR_PARENTID), 'id ASC');
+        $desc->set_source_table('ableplayer_desc', array('ableplayerid' => backup::VAR_PARENTID), 'id ASC');
+        $caption->set_source_table('ableplayer_caption', array('ableplayerid' => backup::VAR_PARENTID), 'id ASC');
         // Define id annotations
 
         // Define file annotations
         $ableplayer->annotate_files('mod_ableplayer', 'intro', null);
-        $ableplayer->annotate_files('mod_ableplayer', 'notes', null);
-        $ableplayer->annotate_files('mod_ableplayer', 'file', null);
-        $ableplayer->annotate_files('mod_ableplayer', 'captionsfile', null);
-        $ableplayer->annotate_files('mod_ableplayer', 'image', null);
+        $ableplayer->annotate_files('mod_ableplayer', 'poster', null);
+        $ableplayer->annotate_files('mod_ableplayer', 'media', 'id');
+        $ableplayer->annotate_files('mod_ableplayer', 'desc', 'id');
+        $ableplayer->annotate_files('mod_ableplayer', 'caption', 'id');
 
         // Return the root element (ableplayer), wrapped into standard activity structure
         return $this->prepare_activity_structure($ableplayer);

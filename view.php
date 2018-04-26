@@ -52,9 +52,9 @@ $PAGE->set_cacheable(true);
 // Output starts here
 echo $OUTPUT->header();
 
-echo '<script src="thirdparty/modernizr.custom.js"></script>';
-echo '<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>';
-echo '<script src="thirdparty/js.cookie.js"></script>';
+echo '<script src="js/modernizr.custom.js"></script>';
+echo '<script src="js/jquery.min.js"></script>';
+echo '<script src="js/js.cookie.js"></script>';
 echo '<link rel="stylesheet" href="styles/ableplayer.css" type="text/css"/>';
 echo '<script src="js/ableplayer.min.js"></script>';
 
