@@ -102,6 +102,9 @@ class mod_ableplayer_mod_form extends moodleform_mod {
         $repeatarray = array();
 
         // Media files & description files
+        $repeatarray[] = $mform->createElement('text', 'url', get_string('ableplayermediaurl', 'ableplayer'));
+        $repeatarray[] = $mform->createElement('hidden', 'mediaurlid', 0);
+
         $options = array('subdirs' => false,
             'maxbytes' => 0,
             'maxfiles' => 1,
@@ -115,6 +118,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             $options
         );
         $repeatarray[] = $mform->createElement('hidden', 'mediaid', 0);
+
         $repeatarray[] = $mform->createElement(
             'filemanager',
             'desc',
@@ -129,6 +133,7 @@ class mod_ableplayer_mod_form extends moodleform_mod {
             $repeatno = 1;
         }
         $repeateloptions = array();
+        $mform->setType('mediaurlid', PARAM_INT);
         $mform->setType('mediaid', PARAM_INT);
         $mform->setType('descid', PARAM_INT);
 

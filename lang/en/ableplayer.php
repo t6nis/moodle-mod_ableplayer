@@ -53,6 +53,7 @@ $string['kind'] = 'Kind';
 $string['srclang'] = 'Language';
 $string['ableplayergeneral'] = 'General settings';
 $string['ableplayermedia'] = 'Media file';
+$string['ableplayermediaurl'] = 'Media URL';
 $string['ableplayerdescriptionfile'] = 'Description file';
 $string['poster'] = 'Poster Image';
 $string['poster_help'] = 'Poster Image (.jpg, .jpeg, .png only)';

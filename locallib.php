@@ -109,6 +109,7 @@ class ableplayer {
             foreach ($formdata->media as $key => $value) {
                 $media = new stdClass();
                 $media->ableplayerid = $returnid;
+                $media->url = $formdata->url;
                 $mediaid = $DB->insert_record("ableplayer_media", $media, true);
                 // Storage of files from the filemanager (captions).
                 $draftitemid = $value;
@@ -223,6 +224,7 @@ class ableplayer {
                 if (isset($formdata->mediaid[$key]) && !empty($formdata->mediaid[$key])) {//existing choice record
                     $media = new stdClass();
                     $media->ableplayerid = $formdata->instance;
+                    $media->url = $formdata->url;
                     $media->id = $formdata->mediaid[$key];
                     $draftitemid = $value;
                     if ($draftitemid) {
@@ -244,6 +246,7 @@ class ableplayer {
                 } else {
                     $media = new stdClass();
                     $media->ableplayerid = $formdata->instance;
+                    $media->url = $formdata->url;
                     $mediaid = $DB->insert_record("ableplayer_media", $media, true);
                     // Storage of files from the filemanager (media).
                     $draftitemid = $value;

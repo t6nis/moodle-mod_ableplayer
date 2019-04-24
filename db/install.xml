@@ -28,6 +28,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
         <FIELD NAME="ableplayerid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Ableplayer activity belongs to"/>
+        <FIELD NAME="url" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="Ableplayer random url"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
